@@ -1,6 +1,6 @@
 # Code by Ahmad Al-Jabbouri
 
-class OtolithDTO:
+class Otolith:
     """
     Represents a Data Transfer Object (DTO) for otolith data.
 
