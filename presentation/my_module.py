@@ -2,4 +2,4 @@
 
 def sign():
     """Prints the signature for the demo."""
-    print("\nCode/demo by Ahmad Al-Jabbouri\n")
+    print("Code/demo by Ahmad Al-Jabbouri")
