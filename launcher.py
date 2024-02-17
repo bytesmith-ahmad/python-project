@@ -14,16 +14,27 @@ os.system("cls")
 
 # get current path
 current_path = os.getcwd()
+logging.info(f"Operating from: {current_path}")
 
 # load config
-config = ConfigParser()
-config.read('config.ini')
-data_source = config.get('Settings','csv_path')
-logging.info(f"Connected to data_source: {current_path}\\{data_source}")
+try:
+    config = ConfigParser()
+    config.read('config.ini')
+    data_source = config.get('Settings','csv_path')
+except FileNotFoundError:
+    logging.error("config.ini NOT FOUND!")
+except:
+    logging.error("Something went wrong attempting to read [Settings] from config.ini")
+else:
+    logging.info(f"Connected to data_source: {current_path}\\{data_source}")
 
 # call consoleview
 fish_console_view = FishConsoleView()
-fish_console_view.start()
+try:
+    fish_console_view.start()
+except Exception as e:
+    # logging.error("ERROR: " + str(e.with_traceback(e.__traceback__)))
+    logging.exception("~~~ ERROR ~~~")
 
 #sign
 sign()

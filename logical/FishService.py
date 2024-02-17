@@ -1,5 +1,7 @@
-
+from persistence.DataStore import DataStore
+import logging
 
 class FishService():
     def __init__(self):
-        self.fish_service = "ON"
+        self.datastore = DataStore()
+        logging.info("Initiated FishService")

@@ -1,7 +1,12 @@
 # my_module.py
 
 def setup(logging):
-    logging.basicConfig(filename='.log', filemode='w', level=logging.INFO, format='%(asctime)s %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
+    logging.basicConfig(filename='.log',
+                        filemode='w',
+                        level=logging.INFO,
+                        format='%(asctime)s [%(filename)s:%(lineno)d] %(message)s',
+                        datefmt='%Y-%m-%d %H:%M:%S'
+                        )
     console = logging.StreamHandler()
     console.setLevel(logging.INFO)
     logging.getLogger('').addHandler(console)

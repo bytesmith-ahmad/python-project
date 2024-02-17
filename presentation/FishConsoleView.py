@@ -1,4 +1,12 @@
 from logical.FishService import FishService
+import logging
+
+try:
+    from parse import *
+except ModuleNotFoundError:
+    import pip    
+    pip.main(['install', parse])
+    from parse import *
 
 class FishConsoleView:
     
@@ -6,14 +14,17 @@ class FishConsoleView:
 
     def __init__(self):  
         self.fish_service = FishService()
+        logging.info("Initiated FishConsoleView")
         
     def start(self): # begin loop
         while True:
             user_input = input("\nEnter your command (type 'help' for available commands): ")
-            processed_input = self.parse(user_input)
+            x = self.process(user_input)
     
-    def parse(self, user_input):
-        return {"command": "cmd", "id" : 5}
+    def process(self, user_input):
+        user_input.trim().lower
+        parsed_input = parse("{}{}",user_input)
+        print(type(parsed_input),parsed_input)
     
     # def printMenu():
         

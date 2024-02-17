@@ -1,1 +1,16 @@
-2024-02-17 04:40:42 Connected to data_source: S:\CODE\PYTHON_2\data\NAFO-4T-Yellowtail-Flounder-otoliths.csv
+2024-02-17 07:00:09 [launcher.py:17] Operating from: S:\CODE\PYTHON_2
+2024-02-17 07:00:09 [launcher.py:29] Connected to data_source: S:\CODE\PYTHON_2\data\NAFO-4T-Yellowtail-Flounder-otoliths.csv
+2024-02-17 07:00:09 [DataStore.py:7] database ON
+2024-02-17 07:00:09 [FishService.py:7] Initiated FishService
+2024-02-17 07:00:09 [FishConsoleView.py:17] Initiated FishConsoleView
+2024-02-17 07:00:14 [launcher.py:37] ~~~ ERROR ~~~
+Traceback (most recent call last):
+  File "S:\CODE\PYTHON_2\launcher.py", line 34, in <module>
+    fish_console_view.start()
+  File "S:\CODE\PYTHON_2\presentation\FishConsoleView.py", line 22, in start
+    x = self.process(user_input)
+        ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "S:\CODE\PYTHON_2\presentation\FishConsoleView.py", line 25, in process
+    user_input.trim().lower
+    ^^^^^^^^^^^^^^^
+AttributeError: 'str' object has no attribute 'trim'
