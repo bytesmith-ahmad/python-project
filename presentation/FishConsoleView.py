@@ -19,12 +19,20 @@ class FishConsoleView:
     def start(self): # begin loop
         while True:
             user_input = input("\nEnter your command (type 'help' for available commands): ")
-            x = self.process(user_input)
+            logging.info(f"User entered \"{user_input}\"")
+            processed_input = self.process(user_input)
+            logging.info(f"Sending\n\taction as {processed_input.get("action")}\n\tid as {processed_input.get("id")}")
     
-    def process(self, user_input):
-        user_input.trim().lower
-        parsed_input = parse("{}{}",user_input)
-        print(type(parsed_input),parsed_input)
+    def process(self, raw_input):
+        try:
+            refined_input = raw_input.strip().lower()
+            result = parse("{action} {id}",refined_input)
+            action = result.named.get("action") # check if allowed
+            id = int(result.named.get("id"))
+            return {"action":action,"id":id}
+        except:
+            logging.exception(f"ERROR: {refined_input} NOT ALLOWED, SEEK HELP")
+            return {"action":"ERROR","id":"ERROR"}
     
     # def printMenu():
         
