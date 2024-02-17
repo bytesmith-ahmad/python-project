@@ -1,6 +1,5 @@
-2024-02-17 12:19:00 [launcher.py:17] Operating from: S:\CODE\PYTHON_2
-2024-02-17 12:19:00 [launcher.py:29] Connected to data_source: S:\CODE\PYTHON_2\data\NAFO-4T-Yellowtail-Flounder-otoliths.csv
-2024-02-17 12:19:00 [DataStore.py:7] database ON
-2024-02-17 12:19:00 [FishService.py:7] Initiated FishService
-2024-02-17 12:19:00 [FishConsoleView.py:17] Initiated FishConsoleView
-2024-02-17 12:19:02 [FishConsoleView.py:24] User entered "help"
+2024-02-17 12:23:04 [launcher.py:17] Operating from: S:\CODE\PYTHON_2
+2024-02-17 12:23:04 [launcher.py:29] Connected to data_source: S:\CODE\PYTHON_2\data\NAFO-4T-Yellowtail-Flounder-otoliths.csv
+2024-02-17 12:23:04 [DataStore.py:7] database ON
+2024-02-17 12:23:04 [FishService.py:7] Initiated FishService
+2024-02-17 12:23:04 [FishConsoleView.py:17] Initiated FishConsoleView

@@ -52,17 +52,26 @@ class FishConsoleView:
     
     # returns True if exit has been signalled
     def execute_action(self, action_set):
+        exit = False
         try:
             action = action_set.get("action")
             match action:
                 case "exit":
-                    return True
+                    exit = True
                 case "help":
                     print(self.MENU_TEXT)
                 case _:
-                    logging.info(f"Executing {action.upper()}...")
+                    logging.info(f"Executing action {action.upper()}...\n")
+                    self.show(self.fish_service.execute_action(action_set))
+        except ValueError:
+            pass
         except:
-            logging.exception("ERROR IN execute_action")
+            logging.exception("ERROR IN FishConsoleView.execute_action")
+        finally:
+            return exit
+            
+    def show(self,result):
+        print("use prettyTable")
             
     def __str__(self):
         return f"{self.fish_service}"
