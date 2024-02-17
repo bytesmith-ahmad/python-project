@@ -30,13 +30,10 @@ else:
 
 # call consoleview
 fish_console_view = FishConsoleView()
-try:
-    fish_console_view.start()
-except Exception as e:
-    # logging.error("ERROR: " + str(e.with_traceback(e.__traceback__)))
-    logging.exception("~~~ ERROR ~~~")
+fish_console_view.start() # loop
+logging.info("Program closed")
 
-#sign
+# signature
 sign()
 
-print(f"\n\n\n\nSee logs at: {current_path}\\.log\n")
+print(f"\033[2mSee logs at: {current_path}\\.log\033[0m\n")

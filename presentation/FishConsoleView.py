@@ -1,65 +1,68 @@
-from logical.FishService import FishService
+import sys
 import logging
-
-try:
-    from parse import *
-except ModuleNotFoundError:
-    import pip    
-    pip.main(['install', parse])
-    from parse import *
+from logical.FishService import FishService
 
 class FishConsoleView:
     
-    # attributes defiend here function as static attributes
+    MENU_TEXT = """
+    - SELECT *option* where option = <id> or *
+    - INSERT      (launches insert wizard)
+    - UPDATE <id> (launches update wizard)
+    - DELETE <id>
+    - exit
+    """
 
     def __init__(self):  
         self.fish_service = FishService()
         logging.info("Initiated FishConsoleView")
         
     def start(self): # begin loop
-        while True:
-            user_input = input("\nEnter your command (type 'help' for available commands): ")
-            logging.info(f"User entered \"{user_input}\"")
-            processed_input = self.process(user_input)
-            logging.info(f"Sending\n\taction as {processed_input.get("action")}\n\tid as {processed_input.get("id")}")
-    
-    def process(self, raw_input):
         try:
-            refined_input = raw_input.strip().lower()
-            result = parse("{action} {id}",refined_input)
-            action = result.named.get("action") # check if allowed
-            id = int(result.named.get("id"))
-            return {"action":action,"id":id}
+            exit = False
+            while not exit:
+                user_input = input("\nEnter your command (type 'help' for available commands)\n\n> ")
+                logging.info(f"User entered \"{user_input}\"")
+                
+                processed_input = self.process(user_input)
+                if processed_input.get("action") is not None:
+                    exit = self.execute_action(processed_input)
         except:
-            logging.exception(f"ERROR: {refined_input} NOT ALLOWED, SEEK HELP")
-            return {"action":"ERROR","id":"ERROR"}
-    
-    # def printMenu():
+            logging.exception("What happened?")
         
     
-    # def cmdMenu():
-        
+    # take raw_input, refines it, then extracts action and id where id could be null
+    def process(self, raw_input):
+        action_set = {
+            "action": None,
+            "arg": None
+        }
+        try:
+            refined_input = raw_input.strip().lower().split()
+            action_set["action"] = refined_input[0]
+            action_set["arg"] = refined_input[1]
+        except IndexError:
+            if action_set["action"] is None:
+                logging.error("\033[31mERROR: CANNOT BE EMPTY, SEEK HELP\033[0m")
+            else:
+                pass
+        except:
+            logging.exception("ERROR: SEEK HELP") # Send exception info to both file AND console
+        finally:
+            return action_set
     
-    # def printTable():
-        
-    
-    # def processInput(String):
-        
-    
-    # def select():
-        
-    
-    # def select(id or (special case, all (*))):
-        
-    
-    # def insert(id):
-        
-    
-    # def update(id):
-        
-    
-    # def delete(id):
-        
-    
+    # returns True if exit has been signalled
+    def execute_action(self, action_set):
+        try:
+            action = action_set.get("action")
+            match action:
+                case "exit":
+                    return True
+                case "help":
+                    print(self.MENU_TEXT)
+                case _:
+                    logging.info(f"Executing {action.upper()}...")
+        except:
+            logging.exception("ERROR IN execute_action")
+            
     def __str__(self):
-        return f"{self.fish_service_instance}"
+        return f"{self.fish_service}"

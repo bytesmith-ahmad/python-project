@@ -1,35 +1,6 @@
-2024-02-17 08:18:31 [launcher.py:17] Operating from: S:\CODE\PYTHON_2
-2024-02-17 08:18:31 [launcher.py:29] Connected to data_source: S:\CODE\PYTHON_2\data\NAFO-4T-Yellowtail-Flounder-otoliths.csv
-2024-02-17 08:18:31 [DataStore.py:7] database ON
-2024-02-17 08:18:31 [FishService.py:7] Initiated FishService
-2024-02-17 08:18:31 [FishConsoleView.py:17] Initiated FishConsoleView
-2024-02-17 08:18:38 [FishConsoleView.py:22] User entered "fgdfgdf"
-2024-02-17 08:18:38 [FishConsoleView.py:34] ERROR: fgdfgdf NOT ALLOWED, SEEK HELP
-Traceback (most recent call last):
-  File "S:\CODE\PYTHON_2\presentation\FishConsoleView.py", line 30, in process
-    action = result.named.get("action") # check if allowed
-             ^^^^^^^^^^^^
-AttributeError: 'NoneType' object has no attribute 'named'
-2024-02-17 08:18:38 [FishConsoleView.py:24] Sending
-	action as ERROR
-	id as ERROR
-2024-02-17 08:19:32 [FishConsoleView.py:22] User entered "fgxdf"
-2024-02-17 08:19:32 [FishConsoleView.py:34] ERROR: fgxdf NOT ALLOWED, SEEK HELP
-Traceback (most recent call last):
-  File "S:\CODE\PYTHON_2\presentation\FishConsoleView.py", line 30, in process
-    action = result.named.get("action") # check if allowed
-             ^^^^^^^^^^^^
-AttributeError: 'NoneType' object has no attribute 'named'
-2024-02-17 08:19:32 [FishConsoleView.py:24] Sending
-	action as ERROR
-	id as ERROR
-2024-02-17 08:19:34 [FishConsoleView.py:22] User entered "dfg"
-2024-02-17 08:19:34 [FishConsoleView.py:34] ERROR: dfg NOT ALLOWED, SEEK HELP
-Traceback (most recent call last):
-  File "S:\CODE\PYTHON_2\presentation\FishConsoleView.py", line 30, in process
-    action = result.named.get("action") # check if allowed
-             ^^^^^^^^^^^^
-AttributeError: 'NoneType' object has no attribute 'named'
-2024-02-17 08:19:34 [FishConsoleView.py:24] Sending
-	action as ERROR
-	id as ERROR
+2024-02-17 12:19:00 [launcher.py:17] Operating from: S:\CODE\PYTHON_2
+2024-02-17 12:19:00 [launcher.py:29] Connected to data_source: S:\CODE\PYTHON_2\data\NAFO-4T-Yellowtail-Flounder-otoliths.csv
+2024-02-17 12:19:00 [DataStore.py:7] database ON
+2024-02-17 12:19:00 [FishService.py:7] Initiated FishService
+2024-02-17 12:19:00 [FishConsoleView.py:17] Initiated FishConsoleView
+2024-02-17 12:19:02 [FishConsoleView.py:24] User entered "help"
