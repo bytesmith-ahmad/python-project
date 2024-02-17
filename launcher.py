@@ -4,7 +4,7 @@ import os
 import logging
 from configparser import ConfigParser
 from modules.my_module import *
-from presentation.fish_console_view import *
+from presentation.FishConsoleView import *
 
 # Configure logger for debugging purposes
 setup(logging)
@@ -19,13 +19,13 @@ current_path = os.getcwd()
 config = ConfigParser()
 config.read('config.ini')
 data_source = config.get('Settings','csv_path')
-logging.info(f"Connected to data_source: {current_path}\{data_source}")
+logging.info(f"Connected to data_source: {current_path}\\{data_source}")
 
 # call consoleview
-fish_console_view = fish_console_view()
-# fish_console_view.start()
+fish_console_view = FishConsoleView()
+fish_console_view.start()
 
 #sign
 sign()
 
-print(f"\n\n\n\nSee logs at: {current_path}\.log\n")
+print(f"\n\n\n\nSee logs at: {current_path}\\.log\n")
