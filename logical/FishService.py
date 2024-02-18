@@ -90,12 +90,11 @@ class FishService:
 
     @classmethod
     def prepare_pretty_table(cls,entity_map):
-        #todo USE MAX_COUNT HERE
         pretty_table = prettytable.PrettyTable()                # initialize
-        pretty_table.field_names = entity_map[-1]   # add headers
+        pretty_table.field_names = entity_map[0]   # add headers
         if len(entity_map) - 1 >= cls.MAX_COUNT:
             upper_bound = cls.MAX_COUNT            # maximum 100 rows
         else:
-            upper_bound = len(entity_map) - 1      # omit headers
+            upper_bound = len(entity_map)      # omit headers
         for i in range(upper_bound):
             pretty_table.add_row(entity_map[i])

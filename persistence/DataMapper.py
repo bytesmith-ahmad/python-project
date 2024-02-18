@@ -3,11 +3,11 @@ from model.Otolith import Otolith
 class DataMapper:
     
     @staticmethod
-    def map_list_to_entity(cls,array):
-        return Otolith(array[0],array[1],array[2],array[3],array[4],array[5],array[6])
+    def map_list_to_entity(list):
+        return Otolith(list[0],list[1],list[2],list[3],list[4],list[5],list[6])
         
     @staticmethod
-    def map_entity_to_list(cls,entity):
+    def map_entity_to_list(entity):
         return [
             entity.source,
             entity.latin_name,

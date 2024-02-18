@@ -35,7 +35,7 @@ class DataStore():
                 DataStore.initialize_config()
             super_list = cls.load_from_csv()
             map = {}
-            i = -1
+            i = 0
             for list in super_list:
                 map[i] = DataMapper.map_list_to_entity(list)
                 i += 1
@@ -67,7 +67,7 @@ class DataStore():
                 with open(cls.DATA_SOURCE, 'w', newline='') as csv_file:
                     super_list = []
                     for i in range(len(entity_map)):
-                        super_list += [DataMapper.map_entity_to_list(entity_map[i-1])]
+                        super_list += [DataMapper.map_entity_to_list(entity_map[i])]
                     csv_writer = csv.writer(csv_file)
                     csv_writer.writerows(super_list)
             except FileNotFoundError:
