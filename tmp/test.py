@@ -120,15 +120,9 @@ def select(*args):
             pt.add_row([idx[i]] + list(lst[i].values()))
         
         # In presentation
-        print(df)
-        i = 0
-        while True:
-            print(pt.get_string(start=i,end=i+10))
-            print("hello")
-            if i > len(idx) - 10:
-                break
-            else:
-                i += 10 
+        os.system('cls')
+        print(len(pt))
+        
         
     if len(args) == 1:
         i = args[0]
@@ -166,8 +160,8 @@ def test_entity_to_list():
     oto = Otolith("oto","oto","oto","oto",8888,888,888888)
     print(vars(oto).keys())
 
-test_entity_to_list()
+# test_entity_to_list()
 
 # update(12,y,9999999999)
 # insert()
-# select()
+select()
