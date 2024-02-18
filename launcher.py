@@ -2,7 +2,6 @@
 
 import os
 import logging
-from configparser import ConfigParser
 from modules.my_module import *
 from presentation.FishConsoleView import *
 
@@ -20,8 +19,7 @@ logging.info(f"Operating from: {current_path}")
 # load config (not needed for this program)
 
 # call consoleview
-fish_console_view = FishConsoleView()
-fish_console_view.start() # loop
+FishConsoleView.start() # loop
 logging.info("Program closed")
 
 # signature

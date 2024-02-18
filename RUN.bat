@@ -1,3 +1,3 @@
-# Runs launcher in interactive mode
+:: Runs launcher in interactive mode
 
-python -i ".\launcher.py"
+python ".\launcher.py"
