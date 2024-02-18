@@ -1,5 +1,13 @@
-2024-02-17 12:23:04 [launcher.py:17] Operating from: S:\CODE\PYTHON_2
-2024-02-17 12:23:04 [launcher.py:29] Connected to data_source: S:\CODE\PYTHON_2\data\NAFO-4T-Yellowtail-Flounder-otoliths.csv
-2024-02-17 12:23:04 [DataStore.py:7] database ON
-2024-02-17 12:23:04 [FishService.py:7] Initiated FishService
-2024-02-17 12:23:04 [FishConsoleView.py:17] Initiated FishConsoleView
+2024-02-17 13:18:50 [launcher.py:17] Operating from: S:\CODE\PYTHON_2
+2024-02-17 13:18:50 [launcher.py:29] Connected to data_source: S:\CODE\PYTHON_2\data\NAFO-4T-Yellowtail-Flounder-otoliths.csv
+2024-02-17 13:18:50 [DataStore.py:7] database ON
+2024-02-17 13:18:50 [FishConsoleView.py:17] Initiated FishConsoleView
+2024-02-17 13:18:53 [FishConsoleView.py:24] User entered "select *"
+2024-02-17 13:18:53 [FishConsoleView.py:64] Executing action SELECT...
+
+2024-02-17 13:18:53 [FishService.py:43] ERROR IN select
+Traceback (most recent call last):
+  File "S:\CODE\PYTHON_2\logical\FishService.py", line 34, in select
+    data = self.datastore.get_data_by_id(arg)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AttributeError: 'DataStore' object has no attribute 'get_data_by_id'

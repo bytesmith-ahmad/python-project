@@ -1,52 +1,56 @@
+import prettytable
 from persistence.DataStore import DataStore
 import logging
 
 class FishService:
     
-    INVALID_COMMAND = None #or replace by a special result#
-    
-    def __init__(self):
-        self.datastore = DataStore()
+    entity_map = DataStore.get_entity_map() # a dictionary of key-values, key being integer, value being Otolith
+    MAX_COUNT = 100
 
     # action_set received from Console view and returns a PrettyTable
-    def execute_action(self, action_set):
+    @classmethod
+    def execute_action(cls, action_set):
         try:
             action = action_set.get("action").upper()
             arg = action_set.get("arg")
             match action:
                 case "SELECT" | "GET":
-                    return self.select(arg)
+                    return cls.select(arg)
                 case "INSERT" | "ADD":
-                    return self.insert()
+                    return cls.insert()
                 case "UPDATE" | "MOD":
-                    return self.update(arg)
+                    return cls.update(arg)
                 case "DELETE" | "DEL":
-                    return self.delete(arg)
+                    return cls.delete(arg)
                 case _:
                     logging.error("\033[31mNO SUCH COMMAND, RETURN\033[0m")
-                    return self.INVALID_COMMAND
+                    return cls.INVALID_COMMAND
         except:
             logging.exception("ERROR IN FishService.execute_action")
 
-    def select(self, arg):
+    @classmethod
+    def select(cls, arg):
+        pt = None
         try:
-            if arg is not None:
-                data = self.datastore.get_data_by_id(arg)
-                if data:
-                    print(f"Selected data: {data}")
-                else:
-                    print("Data not found.")
+            if arg == '*':
+                pt = cls.prepare_pretty_table(cls.entity_map)
+            elif isinstance(arg, int):
+                pt = cls.prepare_pretty_table(cls.entity_map[arg])
             else:
-                all_data = self.datastore.get_all_data()
-                print(f"Selected all data: {all_data}")
+                raise ValueError
+        except ValueError:
+            logging.error(f"{arg} IS NOT ACCEPTED AS ARGUMENT")
         except:
             logging.exception("ERROR IN select")
+        finally:
+            return pt
 
-    def insert(self):
+    @classmethod
+    def insert(cls):
         try:
             # Placeholder logic for inserting data into the datastore
             new_data = {"id": 1, "name": "New Fish", "type": "Tropical"}
-            success = self.datastore.insert_data(new_data)
+            success = cls.datastore.insert_data(new_data)
             if success:
                 print(f"Data inserted successfully: {new_data}")
             else:
@@ -54,12 +58,13 @@ class FishService:
         except:
             logging.exception("ERROR IN insert")
 
-    def update(self, arg):
+    @classmethod
+    def update(cls, arg):
         try:
             if arg is not None:
                 # Placeholder logic for updating data in the datastore
                 updated_data = {"id": arg, "name": "Updated Fish", "type": "Saltwater"}
-                success = self.datastore.update_data(updated_data)
+                success = cls.datastore.update_data(updated_data)
                 if success:
                     print(f"Data updated successfully: {updated_data}")
                 else:
@@ -69,10 +74,11 @@ class FishService:
         except:
             logging.exception("ERROR IN update")
 
-    def delete(self, arg):
+    @classmethod
+    def delete(cls, arg):
         try:
             if arg is not None:
-                success = self.datastore.delete_data_by_id(arg)
+                success = cls.datastore.delete_data_by_id(arg)
                 if success:
                     print(f"Deleted data with ID {arg}")
                 else:
@@ -81,3 +87,15 @@ class FishService:
                 print("Please provide an ID for deletion.")
         except:
             logging.exception("ERROR IN delete")
+
+    @classmethod
+    def prepare_pretty_table(cls,entity_map):
+        #todo USE MAX_COUNT HERE
+        pretty_table = prettytable.PrettyTable()                # initialize
+        pretty_table.field_names = entity_map[-1]   # add headers
+        if len(entity_map) - 1 >= cls.MAX_COUNT:
+            upper_bound = cls.MAX_COUNT            # maximum 100 rows
+        else:
+            upper_bound = len(entity_map) - 1      # omit headers
+        for i in range(upper_bound):
+            pretty_table.add_row(entity_map[i])

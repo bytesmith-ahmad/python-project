@@ -12,26 +12,24 @@ class FishConsoleView:
     - exit
     """
 
-    def __init__(self):  
-        self.fish_service = FishService()
-        logging.info("Initiated FishConsoleView")
-        
-    def start(self): # begin loop
+    @classmethod
+    def start(cls): # begin loop
         try:
             exit = False
             while not exit:
                 user_input = input("\nEnter your command (type 'help' for available commands)\n\n> ")
                 logging.info(f"User entered \"{user_input}\"")
                 
-                processed_input = self.process(user_input)
+                processed_input = cls.process(user_input)
                 if processed_input.get("action") is not None:
-                    exit = self.execute_action(processed_input)
+                    exit = cls.execute_action(processed_input)
         except:
             logging.exception("What happened?")
         
     
     # take raw_input, refines it, then extracts action and id where id could be null
-    def process(self, raw_input):
+    @classmethod
+    def process(cls, raw_input):
         action_set = {
             "action": None,
             "arg": None
@@ -51,7 +49,8 @@ class FishConsoleView:
             return action_set
     
     # returns True if exit has been signalled
-    def execute_action(self, action_set):
+    @classmethod
+    def execute_action(cls, action_set):
         exit = False
         try:
             action = action_set.get("action")
@@ -59,10 +58,11 @@ class FishConsoleView:
                 case "exit":
                     exit = True
                 case "help":
-                    print(self.MENU_TEXT)
+                    print(cls.MENU_TEXT)
                 case _:
                     logging.info(f"Executing action {action.upper()}...\n")
-                    self.show(self.fish_service.execute_action(action_set))
+                    result = FishService.execute_action(action_set) # The only connection to FishService
+                    print(result) # Either PrettyTable or string, both printable
         except ValueError:
             pass
         except:
@@ -70,8 +70,6 @@ class FishConsoleView:
         finally:
             return exit
             
-    def show(self,result):
-        print("use prettyTable")
-            
-    def __str__(self):
-        return f"{self.fish_service}"
+    @classmethod
+    def __str__(cls):
+        return f"{cls}"
