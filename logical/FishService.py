@@ -24,7 +24,7 @@ class FishService:
                     return cls.delete(arg)
                 case _:
                     logging.error("\033[31mNO SUCH COMMAND, RETURN\033[0m")
-                    return cls.INVALID_COMMAND
+                    return "\033[31mERROR\033[0m"
         except:
             logging.exception("ERROR IN FishService.execute_action")
 
