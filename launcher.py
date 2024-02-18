@@ -1,4 +1,6 @@
-# This package requires to be at the top level lest the import will fail!
+# Code by Ahmad Al-Jabbouri
+
+#todo This package requires to be at the top level lest all imports will fail!
 
 import os
 import logging

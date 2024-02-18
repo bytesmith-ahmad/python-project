@@ -1,27 +1,12 @@
 from typing import Union, Dict
 import prettytable
 from model.Otolith import Otolith
-from persistence.DataMapper import DataMapper
 from persistence.DataStore import DataStore
 import logging
 
 class FishService:
     
-    entity_map:Dict[int,Otolith] = {} # a dictionary of key-values, key being integer, value being Otolith
-    MAX_COUNT:int = 100
-    
-    @classmethod
-    def initialize_entity_map(cls) -> None:
-        cls.entity_map = cls.get_otoliths()
-    
-    @classmethod
-    def get_otoliths(cls) -> Dict[int,Otolith]:
-        data_set = DataStore.select_all() # contains indeces and dictionaries describing otoliths
-        indeces = data_set["indeces"]
-        otolith_data = data_set["maps"]
-        mapping = {}
-        for i in indeces:
-            mapping[i] = DataMapper.map_to_entity(otolith_data[i])
+    entity_map:Dict[int,Otolith] = DataStore.select_all() # a dictionary of key-values, key being integer, value being Otolith
 
     # action_set received from Console view and returns a PrettyTable
     @classmethod
@@ -51,7 +36,7 @@ class FishService:
             if index == '*':
                 pt = cls.prepare_pretty_table(cls.entity_map)
             elif isinstance(index, int):
-                pt = cls.prepare_pretty_table(cls.entity_map[index])
+                pt = cls.prepare_pretty_table({index:cls.entity_map[index]})
             else:
                 raise ValueError
         except ValueError:
@@ -105,12 +90,11 @@ class FishService:
             logging.exception("ERROR IN delete")
 
     @classmethod
-    def prepare_pretty_table(cls,entity_map):
-        pretty_table = prettytable.PrettyTable()                # initialize
-        pretty_table.field_names = entity_map[0]   # add headers
-        if len(entity_map) - 1 >= cls.MAX_COUNT:
-            upper_bound = cls.MAX_COUNT            # maximum 100 rows
-        else:
-            upper_bound = len(entity_map)      # omit headers
-        for i in range(upper_bound):
-            pretty_table.add_row(entity_map[i])
+    def prepare_pretty_table(cls,data:Dict[int,Otolith]) -> prettytable.PrettyTable:
+        logging.info("Preparing table...")
+        
+        pretty_table = prettytable.PrettyTable()   # initialize
+        pretty_table.field_names = ["id"] + Otolith.get_properties()
+        
+        for key, otolith in data.items():
+            pretty_table.add_row([key] + otolith.get_attributes())

@@ -5,11 +5,11 @@ from logical.FishService import FishService
 class FishConsoleView:
     
     MENU_TEXT = """
-    - SELECT <id> | *
-    - INSERT      (launches insert wizard)
-    - UPDATE <id> (launches update wizard)
+    - SELECT <id> | * (displays table)
+    - INSERT          (launches insert wizard)
+    - UPDATE <id>     (launches update wizard)
     - DELETE <id>
-    - exit
+    - exit            (terminates program)
     """
 
     @classmethod

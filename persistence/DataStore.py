@@ -1,10 +1,11 @@
+# Code by Ahmad Al-Jabbouri
 
 import configparser
 import logging
 import os
 from typing import *
 import pandas as pd
-from persistence.DataMapper import DataMapper
+from model.Otolith import Otolith
 
 class DataStore():
     
@@ -40,35 +41,28 @@ class DataStore():
             logging.info(f"\033[92mCONNECTED TO DATABASE\033[0m: {cls.CURRENT_PATH}\\{cls.DATA_SOURCE}")
             
     @classmethod
-    def select_all(cls) -> Dict[str,List]: #todo CHANGE TO INT -> OTOLITH
+    def select_all(cls) -> Dict[int,Otolith]:
         logging.info("Executing SELECT_ALL...")
         
-        idx = []
-        lst = []
-        i = 0
-        
+        dataset = {}
         for i in range(len(cls.dataframe.index)):
-            idx.append(i)
-            lst.append(cls.select(i))
-        
-        return {"indeces":idx,"maps":lst}
+            dataset[i] = cls.select(i)
+        return dataset
     
-    """DataFrame -> Series -> Otolith""" #todo: JUST CREATE OTOLITH DIRECTLY
+    """DataFrame -> Series -> Otolith"""
     @classmethod
-    def select(cls, index: int) -> Dict[str,Union[str,int]]:
+    def select(cls, index: int) -> Otolith:
         logging.info("Executing SELECT...")
-        
         series = cls.dataframe.loc[index]
-        map = {
-            "source":series.loc[cls.DATA_FIELDS[0]],
-            "latin_name": series.loc[cls.DATA_FIELDS[1]],
-            "english_name": series.loc[cls.DATA_FIELDS[2]],
-            "french_name": series.loc[cls.DATA_FIELDS[3]],
-            "year": series.loc[cls.DATA_FIELDS[4]],
-            "month": series.loc[cls.DATA_FIELDS[5]],
-            "number": series.loc[cls.DATA_FIELDS[6]]
-        }
-        return map
+        return Otolith( 
+            source = series.loc[cls.DATA_FIELDS[0]],
+            latin_name = series.loc[cls.DATA_FIELDS[1]],
+            english_name = series.loc[cls.DATA_FIELDS[2]],
+            french_name = series.loc[cls.DATA_FIELDS[3]],
+            year = series.loc[cls.DATA_FIELDS[4]],
+            month = series.loc[cls.DATA_FIELDS[5]],
+            number = series.loc[cls.DATA_FIELDS[6]]
+        )
     
     @classmethod
     def insert(cls, data: List[List]):
@@ -87,18 +81,3 @@ class DataStore():
     def delete(cls,index):
         logging.info("Executing DELETE...")
         cls.dataframe.drop([index])
-        
-    # @classmethod
-    # def save_to_csv(cls,entity_map):
-    #     if entity_map is not None:
-    #         try:
-    #             with open(cls.DATA_SOURCE, 'w', newline='') as csv_file:
-    #                 super_list = []
-    #                 for i in range(len(entity_map)):
-    #                     super_list += [DataMapper.map_entity_to_list(entity_map[i])]
-    #                 csv_writer = csv.writer(csv_file)
-    #                 csv_writer.writerows(super_list)
-    #         except FileNotFoundError:
-    #             print(f"Error: File not found at path: {cls.DATA_SOURCE}")
-    #         except csv.Error as e:
-    #             print(f"Error while writing to CSV file: {e}")

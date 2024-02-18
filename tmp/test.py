@@ -119,6 +119,7 @@ def select(*args):
         for i in range(len(lst)):
             pt.add_row([idx[i]] + list(lst[i].values()))
         
+        # In presentation
         print(df)
         i = 0
         while True:
