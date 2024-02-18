@@ -1,19 +1,16 @@
+from typing import Dict
 from model.Otolith import Otolith
 
 class DataMapper:
-    
-    @staticmethod
-    def map_list_to_entity(list):
-        return Otolith(list[0],list[1],list[2],list[3],list[4],list[5],list[6])
         
     @staticmethod
-    def map_entity_to_list(entity):
-        return [
-            entity.source,
-            entity.latin_name,
-            entity.english_name,
-            entity.french_name,
-            entity.year,
-            entity.month,
-            entity.number_otoliths
-        ]
+    def map_to_entity(otolith_dict:Dict[str]) -> Otolith:
+        return Otolith(
+            source=otolith_dict["source"],
+            latin_name=otolith_dict["latin_name"],
+            english_name=otolith_dict["english_name"],
+            french_name=otolith_dict["french_name"],
+            year=otolith_dict["year"],
+            month=otolith_dict["month"],
+            number_otoliths=otolith_dict["number"]
+        )

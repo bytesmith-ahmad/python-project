@@ -1,27 +1,43 @@
+from typing import Union, Dict
 import prettytable
+from model.Otolith import Otolith
+from persistence.DataMapper import DataMapper
 from persistence.DataStore import DataStore
 import logging
 
 class FishService:
     
-    entity_map = DataStore.get_entity_map() # a dictionary of key-values, key being integer, value being Otolith
-    MAX_COUNT = 100
+    entity_map:Dict[int,Otolith] = {} # a dictionary of key-values, key being integer, value being Otolith
+    MAX_COUNT:int = 100
+    
+    @classmethod
+    def initialize_entity_map(cls) -> None:
+        cls.entity_map = cls.get_otoliths()
+    
+    @classmethod
+    def get_otoliths(cls) -> Dict[int,Otolith]:
+        data_set = DataStore.select_all() # contains indeces and dictionaries describing otoliths
+        indeces = data_set["indeces"]
+        otolith_data = data_set["maps"]
+        mapping = {}
+        for i in indeces:
+            mapping[i] = DataMapper.map_to_entity(otolith_data[i])
 
     # action_set received from Console view and returns a PrettyTable
     @classmethod
     def execute_action(cls, action_set):
         try:
             action = action_set.get("action").upper()
-            arg = action_set.get("arg")
+            index = action_set.get("arg")
             match action:
                 case "SELECT" | "GET":
-                    return cls.select(arg)
+                    return cls.select(index)
                 case "INSERT" | "ADD":
                     return cls.insert()
                 case "UPDATE" | "MOD":
-                    return cls.update(arg)
+                    return cls.update(index)
                 case "DELETE" | "DEL":
-                    return cls.delete(arg)
+                    return cls.delete(index)
                 case _:
                     logging.error("\033[31mNO SUCH COMMAND, RETURN\033[0m")
                     return "\033[31mERROR\033[0m"
@@ -29,17 +45,17 @@ class FishService:
             logging.exception("ERROR IN FishService.execute_action")
 
     @classmethod
-    def select(cls, arg):
+    def select(cls, index:Union[int,str]):
         pt = None
         try:
-            if arg == '*':
+            if index == '*':
                 pt = cls.prepare_pretty_table(cls.entity_map)
-            elif isinstance(arg, int):
-                pt = cls.prepare_pretty_table(cls.entity_map[arg])
+            elif isinstance(index, int):
+                pt = cls.prepare_pretty_table(cls.entity_map[index])
             else:
                 raise ValueError
         except ValueError:
-            logging.error(f"{arg} IS NOT ACCEPTED AS ARGUMENT")
+            logging.error(f"{index} IS NOT ACCEPTED AS ARGUMENT")
         except:
             logging.exception("ERROR IN select")
         finally:

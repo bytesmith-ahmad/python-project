@@ -5,7 +5,7 @@ from logical.FishService import FishService
 class FishConsoleView:
     
     MENU_TEXT = """
-    - SELECT *option* where option = <id> or *
+    - SELECT <id> | *
     - INSERT      (launches insert wizard)
     - UPDATE <id> (launches update wizard)
     - DELETE <id>
