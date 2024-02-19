@@ -33,9 +33,8 @@ class Otolith:
     def get_attributes(self) -> List:
         return list(vars(self).values())
     
-    @classmethod
-    def get_properties(cls) -> List:
-        return list(vars(cls).keys())
+    def get_fields(self) -> List:
+        return list(vars(self).keys())
 
     def __str__(self) -> str:
         """

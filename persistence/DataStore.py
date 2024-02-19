@@ -1,7 +1,7 @@
 # Code by Ahmad Al-Jabbouri
 
 import configparser
-import logging
+from logging import info, exception, error, debug
 import os
 from typing import *
 import pandas as pd
@@ -17,14 +17,13 @@ class DataStore():
     
     """Returns dataframe from CSV file"""
     @classmethod
-    def load_dataframe(cls) -> pd.DataFrame:
-        logging.info("Loading dataframe...")
+    def load_dataframe(cls) -> None:
+        info("Loading dataframe...")
         if cls.DATA_SOURCE is None:
             cls.connect_database()
         pd.options.display.max_rows = cls.MAX_ROWS # Will not display more than 100 records
         cls.dataframe = pd.read_csv(cls.DATA_SOURCE)
         cls.DATA_FIELDS = list(cls.dataframe.columns)
-        return cls.dataframe
             
     """Connects to data source"""
     @classmethod
@@ -34,25 +33,29 @@ class DataStore():
             config.read('config.ini')
             cls.DATA_SOURCE = config.get('database', 'csv_path')
         except FileNotFoundError:
-            logging.error("\033[31mconfig.ini NOT FOUND! Place one next to launcher.py\033[0m")
+            error("\033[31mconfig.ini NOT FOUND! Place one next to launcher.py\033[0m")
         except:
-            logging.exception("\033[31mERROR: Something went wrong attempting to read [database] from config.ini\033[0m")
+            exception("\033[31mERROR: Something went wrong attempting to read [database] from config.ini\033[0m")
         else:
-            logging.info(f"\033[92mCONNECTED TO DATABASE\033[0m: {cls.CURRENT_PATH}\\{cls.DATA_SOURCE}")
+            info(f"\033[92mCONNECTED TO DATABASE\033[0m: {cls.CURRENT_PATH}\\{cls.DATA_SOURCE}")
             
     @classmethod
     def select_all(cls) -> Dict[int,Otolith]:
-        logging.info("Executing SELECT_ALL...")
-        
-        dataset = {}
-        for i in range(len(cls.dataframe.index)):
-            dataset[i] = cls.select(i)
-        return dataset
+        try:
+            info("Executing SELECT_ALL...")
+            if cls.dataframe is None:
+                cls.load_dataframe()
+            dataset = {}
+            for i in range(len(cls.dataframe.index)):
+                dataset[i] = cls.select(i)
+            return dataset
+        except Exception as e:
+            exception(e)
     
     """DataFrame -> Series -> Otolith"""
     @classmethod
     def select(cls, index: int) -> Otolith:
-        logging.info("Executing SELECT...")
+        debug("Executing SELECT...")
         series = cls.dataframe.loc[index]
         return Otolith( 
             source = series.loc[cls.DATA_FIELDS[0]],
@@ -66,18 +69,18 @@ class DataStore():
     
     @classmethod
     def insert(cls, data: List[List]):
-        logging.info("Executing INSERT...")
+        info("Executing INSERT...")
         new_df = pd.DataFrame(data,columns=list(cls.dataframe.columns))
         cls.dataframe = pd.concat([cls.dataframe,new_df])
         cls.dataframe.to_csv(cls.DATA_SOURCE,index=False)
     
     @classmethod
     def update(cls, index: int, column: str, new_val: Union[str,int]):
-        logging.info("Executing UPDATE...")
+        info("Executing UPDATE...")
         cls.dataframe.loc[index,column] = new_val
         cls.dataframe.to_csv(cls.DATA_SOURCE,index=False)
     
     @classmethod
     def delete(cls,index):
-        logging.info("Executing DELETE...")
+        info("Executing DELETE...")
         cls.dataframe.drop([index])

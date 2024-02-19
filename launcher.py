@@ -2,27 +2,20 @@
 
 #todo This package requires to be at the top level lest all imports will fail!
 
-import os
-import logging
+from os import getcwd
+from logging import info
 from modules.my_module import *
 from presentation.FishConsoleView import *
 
-# Configure logger in my own tastes for debugging purposes
-# in the future, may create my own logging module complete with styles
-setup(logging)
-
-# clear console
-os.system("cls")
-
 # get current path
-current_path = os.getcwd()
-logging.info(f"Operating from: {current_path}")
+current_path = getcwd()
+info(f"Operating from: {current_path}")
 
 # load config (not needed for this program)
 
 # call consoleview
 FishConsoleView.start() # loop
-logging.info("Program closed")
+info("Program closed")
 
 # signature
 sign()

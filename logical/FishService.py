@@ -27,8 +27,8 @@ class FishService:
                     return cls.delete(index)
                 case _:
                     logging.error("\033[31mNO SUCH COMMAND, RETURN\033[0m")
-                    return "\033[31mERROR\033[0m"
-        except:
+                    return DisplayInfo(error=True,error_msg="\033[31mERROR\033[0m")
+        except Exception as e:
             logging.exception("ERROR IN FishService.execute_action")
 
     @classmethod
@@ -37,31 +37,33 @@ class FishService:
         try:
             if index == '*':
                 di = cls.prepare_display_info(cls.entity_map)
-            elif isinstance(index, int):
+            elif index.isdigit():
+                index = int(index)
                 di = cls.prepare_display_info({index:cls.entity_map[index]})
             else:
                 raise ValueError
-        except ValueError:
+        except ValueError as ve:
             logging.error(f"{index} IS NOT ACCEPTED AS ARGUMENT")
             di = DisplayInfo(error=True)
-        except:
-            logging.exception("ERROR IN select")
+        except Exception as e:
+            logging.exception("ERROR IN select:" + e)
             di = DisplayInfo(error=True)
         finally:
             return di
 
     @classmethod
     def insert(cls):
-        try:
-            # Placeholder logic for inserting data into the datastore
-            new_data = {"id": 1, "name": "New Fish", "type": "Tropical"}
-            success = cls.datastore.insert_data(new_data)
-            if success:
-                print(f"Data inserted successfully: {new_data}")
-            else:
-                print("Failed to insert data.")
-        except:
-            logging.exception("ERROR IN insert")
+        pass
+        # try:
+        #     self.source = source
+        #     self.latin_name = latin_name
+        #     self.english_name = english_name
+        #     self.french_name = french_name
+        #     self.year = year
+        #     self.month = month
+        #     self.number = number
+        # except:
+        #     logging.exception("ERROR IN insert")
 
     @classmethod
     def update(cls, arg):
@@ -98,7 +100,7 @@ class FishService:
         logging.info("Preparing display information...")
         
         pt = PrettyTable()   # initialize
-        pt.field_names = ["id"] + Otolith.get_properties()
+        pt.field_names = ["id"] + list(data.values())[0].get_fields()
         
         count = 0
         for key, otolith in data.items():

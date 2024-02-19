@@ -1,7 +1,7 @@
 from logging import info, exception, error
 from prettytable import PrettyTable
 from logical.FishService import FishService
-from my_module import sign
+from modules.my_module import sign, setup
 from presentation.DisplayInfo import DisplayInfo
 
 class FishConsoleView:
@@ -67,13 +67,13 @@ class FishConsoleView:
                     cls.execute(display_info) # Either PrettyTable or string, both printable
         except ValueError:
             pass
-        except:
+        except Exception as e:
             exception("ERROR IN FishConsoleView.execute_action")
         finally:
             return exit
         
     @classmethod
-    def execute(display_info:DisplayInfo):
+    def execute(cls, display_info:DisplayInfo):
         if display_info.is_table:
             pt = display_info.pretty_table
             row_count = display_info.row_count
@@ -85,7 +85,7 @@ class FishConsoleView:
                     break
                 else:
                     i += 10
-            
+
     @classmethod
     def __str__(cls):
         return f"{cls}"

@@ -1,0 +1,7 @@
+2024-02-18 20:30:43 [DataStore.py:45] Executing SELECT_ALL...
+2024-02-18 20:30:43 [DataStore.py:21] Loading dataframe...
+2024-02-18 20:30:43 [DataStore.py:40] [92mCONNECTED TO DATABASE[0m: S:\CODE\PYTHON_2\data\NAFO-4T-Yellowtail-Flounder-otoliths.csv
+2024-02-18 20:30:43 [launcher.py:12] Operating from: S:\CODE\PYTHON_2
+2024-02-18 20:31:03 [FishConsoleView.py:23] User entered "help"
+2024-02-18 20:31:04 [FishConsoleView.py:23] User entered "exit"
+2024-02-18 20:31:04 [launcher.py:18] Program closed
