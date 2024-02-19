@@ -11,8 +11,6 @@ from presentation.FishConsoleView import *
 current_path = getcwd()
 info(f"Operating from: {current_path}")
 
-# load config (not needed for this program)
-
 # call consoleview
 FishConsoleView.start() # loop
 info("Program closed")

@@ -48,7 +48,9 @@ class FishService:
                     new = action_set["new_value"]
                     return cls.update(index, col, new)
                 case "DELETE" | "DEL":
-                    return cls.delete(index)
+                    x = cls.delete(index)
+                    cls.entity_map = DataStore.select_all()
+                    return x
                 case _:
                     logging.error("\033[31mNO SUCH COMMAND, RETURN\033[0m")
                     return DisplayInfo(error=True, error_msg="\033[31mERROR\033[0m")
@@ -148,8 +150,6 @@ class FishService:
             index = int(index)
             if index is not None:
                 DataStore.delete(index)
-                cls.entity_map = DataStore.select_all()
-
                 print(f"Deleted data with ID {index}")
                 return cls.prepare_display_info({index: cls.entity_map[index]})
             else:
