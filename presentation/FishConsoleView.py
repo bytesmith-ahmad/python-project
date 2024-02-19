@@ -5,17 +5,23 @@ from modules.my_module import sign
 from presentation.DisplayInfo import DisplayInfo
 
 class FishConsoleView:
-    
+    """
+    Console view for interacting with FishService.
+    """
+
     MENU_TEXT = """
     - SELECT <id> | * (displays table)
-    - INSERT          (launches insert wizard)
+    - INSERT          (inserts dummy record)
     - UPDATE <id>     (launches update wizard)
     - DELETE <id>
     - exit            (terminates program)
     """
 
     @classmethod
-    def start(cls): # begin loop
+    def start(cls):
+        """
+        Begin the console loop for user interaction.
+        """
         try:
             exit = False
             while not exit:
@@ -27,11 +33,12 @@ class FishConsoleView:
                     exit = cls.execute_action(processed_input)
         except:
             exception("What happened?")
-        
     
-    # take raw_input, refines it, then extracts action and id where id could be null
     @classmethod
     def process(cls, raw_input):
+        """
+        Take raw input, refine it, and extract action and id where id could be null.
+        """
         action_set = {
             "action": None,
             "arg": None
@@ -46,13 +53,15 @@ class FishConsoleView:
             else:
                 pass
         except:
-            exception("ERROR: SEEK HELP") # Send exception info to both file AND console
+            exception("ERROR: SEEK HELP")  # Send exception info to both file AND console
         finally:
             return action_set
     
-    # returns True if exit has been signalled
     @classmethod
     def execute_action(cls, action_set):
+        """
+        Execute the action based on user input.
+        """
         exit = False
         try:
             action = action_set.get("action")
@@ -65,23 +74,26 @@ class FishConsoleView:
                     cls.prompt_update() 
                 case _:
                     info(f"Executing action {action.upper()}...\n")
-                    display_info = FishService.execute_action(action_set) # The only connection to FishService
-                    cls.execute(display_info) # Either PrettyTable or string, both printable
+                    display_info = FishService.execute_action(action_set)  # The only connection to FishService
+                    cls.execute(display_info)  # Either PrettyTable or string, both printable
         except ValueError:
             pass
         except Exception as e:
             exception("ERROR IN FishConsoleView.execute_action")
         finally:
             return exit
-        
+    
     @classmethod
-    def execute(cls, display_info:DisplayInfo):
+    def execute(cls, display_info: DisplayInfo):
+        """
+        Execute based on the display information.
+        """
         if display_info.is_table:
             pt = display_info.pretty_table
             row_count = display_info.row_count
             i = 0
             while True:
-                print(pt.get_string(start=i,end=i+10))
+                print(pt.get_string(start=i, end=i + 10))
                 sign()
                 if i > row_count - 10:
                     break
@@ -90,6 +102,9 @@ class FishConsoleView:
 
     @classmethod
     def prompt_update(cls):
+        """
+        Prompt the user for input to update data.
+        """
         try:
             index = input("Enter the ID to update: ")
             column = input("Enter the column to update: ")
@@ -103,4 +118,7 @@ class FishConsoleView:
 
     @classmethod
     def __str__(cls):
+        """
+        String representation of the class.
+        """
         return f"{cls}"

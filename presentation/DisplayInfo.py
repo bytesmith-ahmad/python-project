@@ -10,6 +10,20 @@ class DisplayInfo:
         index: int = 0,
         error: bool = False,
         error_msg: str = "") -> Self:
+        """
+        Initialize DisplayInfo object.
+
+        Parameters:
+        - is_table (bool): Indicates whether the data should be displayed as a table.
+        - row_count (int): Number of rows in the table.
+        - pretty_table (PrettyTable): PrettyTable object representing the tabular data.
+        - index (int): Index of the data.
+        - error (bool): Indicates if an error occurred.
+        - error_msg (str): Error message.
+
+        Returns:
+        - DisplayInfo: Instance of DisplayInfo.
+        """
         self.error: bool = error
         self.error_msg: str = error_msg
         self.is_table: bool = is_table
