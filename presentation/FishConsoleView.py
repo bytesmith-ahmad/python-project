@@ -1,7 +1,7 @@
 from logging import info, exception, error
 from prettytable import PrettyTable
 from logical.FishService import FishService
-from modules.my_module import sign, setup
+from modules.my_module import sign
 from presentation.DisplayInfo import DisplayInfo
 
 class FishConsoleView:
@@ -61,6 +61,8 @@ class FishConsoleView:
                     exit = True
                 case "help":
                     print(cls.MENU_TEXT)
+                case "update":
+                    cls.prompt_update() 
                 case _:
                     info(f"Executing action {action.upper()}...\n")
                     display_info = FishService.execute_action(action_set) # The only connection to FishService
@@ -85,6 +87,19 @@ class FishConsoleView:
                     break
                 else:
                     i += 10
+
+    @classmethod
+    def prompt_update(cls):
+        try:
+            index = input("Enter the ID to update: ")
+            column = input("Enter the column to update: ")
+            new_value = input("Enter the new value: ")
+
+            action_set = {"action": "update", "arg": index, "column": column, "new_value": new_value}
+            display_info = FishService.execute_action(action_set)
+            cls.execute(display_info)
+        except Exception as e:
+            exception("ERROR IN prompt_update")
 
     @classmethod
     def __str__(cls):

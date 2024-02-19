@@ -55,32 +55,48 @@ class DataStore():
     """DataFrame -> Series -> Otolith"""
     @classmethod
     def select(cls, index: int) -> Otolith:
-        debug("Executing SELECT...")
-        series = cls.dataframe.loc[index]
-        return Otolith( 
-            source = series.loc[cls.DATA_FIELDS[0]],
-            latin_name = series.loc[cls.DATA_FIELDS[1]],
-            english_name = series.loc[cls.DATA_FIELDS[2]],
-            french_name = series.loc[cls.DATA_FIELDS[3]],
-            year = series.loc[cls.DATA_FIELDS[4]],
-            month = series.loc[cls.DATA_FIELDS[5]],
-            number = series.loc[cls.DATA_FIELDS[6]]
-        )
+        try:
+            debug("Executing SELECT...")
+            series = cls.dataframe.loc[index]
+            return Otolith( 
+                source = series.loc[cls.DATA_FIELDS[0]],
+                latin_name = series.loc[cls.DATA_FIELDS[1]],
+                english_name = series.loc[cls.DATA_FIELDS[2]],
+                french_name = series.loc[cls.DATA_FIELDS[3]],
+                year = series.loc[cls.DATA_FIELDS[4]],
+                month = series.loc[cls.DATA_FIELDS[5]],
+                number = series.loc[cls.DATA_FIELDS[6]]
+            )
+        except Exception as e:
+            pass
     
     @classmethod
     def insert(cls, data: List[List]):
-        info("Executing INSERT...")
-        new_df = pd.DataFrame(data,columns=list(cls.dataframe.columns))
-        cls.dataframe = pd.concat([cls.dataframe,new_df])
-        cls.dataframe.to_csv(cls.DATA_SOURCE,index=False)
+        try:
+            info("Executing INSERT...")
+            new_df = pd.DataFrame(data,columns=list(cls.dataframe.columns))
+            cls.dataframe = pd.concat([cls.dataframe,new_df])
+            cls.dataframe.to_csv(cls.DATA_SOURCE,index=False)
+            cls.load_dataframe()
+        except Exception as e:
+            pass
     
     @classmethod
     def update(cls, index: int, column: str, new_val: Union[str,int]):
-        info("Executing UPDATE...")
-        cls.dataframe.loc[index,column] = new_val
-        cls.dataframe.to_csv(cls.DATA_SOURCE,index=False)
+        try:
+            info("Executing UPDATE...")
+            cls.dataframe.loc[index,column] = new_val
+            cls.dataframe.to_csv(cls.DATA_SOURCE,index=False)
+            cls.load_dataframe()
+        except Exception as e:
+            pass
     
     @classmethod
-    def delete(cls,index):
-        info("Executing DELETE...")
-        cls.dataframe.drop([index])
+    def delete(cls, index):
+        try:
+            info("Executing DELETE...")
+            cls.dataframe.drop([index], inplace=True)
+            cls.dataframe.to_csv(cls.DATA_SOURCE, index=False)
+            cls.load_dataframe()
+        except Exception as e:
+            pass

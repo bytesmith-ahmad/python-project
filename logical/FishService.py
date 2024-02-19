@@ -22,7 +22,9 @@ class FishService:
                 case "INSERT" | "ADD":
                     return cls.insert()
                 case "UPDATE" | "MOD":
-                    return cls.update(index)
+                    col = action_set["column"]
+                    new = action_set["new_value"]
+                    return cls.update(index,col,new)
                 case "DELETE" | "DEL":
                     return cls.delete(index)
                 case _:
@@ -52,48 +54,59 @@ class FishService:
             return di
 
     @classmethod
-    def insert(cls):
-        pass
-        # try:
-        #     self.source = source
-        #     self.latin_name = latin_name
-        #     self.english_name = english_name
-        #     self.french_name = french_name
-        #     self.year = year
-        #     self.month = month
-        #     self.number = number
-        # except:
-        #     logging.exception("ERROR IN insert")
+    def insert(cls) -> DisplayInfo:
+        try:
+            # Placeholder logic for inserting data into the datastore
+            new_data = {"source": "New Source", "latin_name": "New Latin", "english_name": "New English",
+                        "french_name": "New French", "year": 2024, "month": 2, "number": 42}
+
+            DataStore.insert([list(new_data.values())])
+            cls.entity_map = DataStore.select_all()  # Update entity_map after insertion
+
+            print(f"Data inserted successfully: {new_data}")
+            return cls.prepare_display_info({len(cls.entity_map) - 1: cls.entity_map[len(cls.entity_map) - 1]})
+        except Exception as e:
+            logging.exception("ERROR IN insert")
+            return DisplayInfo(error=True, error_msg=str(e))
 
     @classmethod
-    def update(cls, arg):
+    def update(cls, index: int, column: str, new_val: Union[str, int]) -> DisplayInfo:
         try:
-            if arg is not None:
-                # Placeholder logic for updating data in the datastore
-                updated_data = {"id": arg, "name": "Updated Fish", "type": "Saltwater"}
-                success = cls.datastore.update_data(updated_data)
-                if success:
-                    print(f"Data updated successfully: {updated_data}")
-                else:
-                    print(f"Failed to update data with ID {arg}.")
+            if str(index).isdigit():
+                index = int(index)
+                
+                # Send new value to DataStore.update
+                DataStore.update(index, column, new_val)
+                
+                # Update entity_map with the updated data
+                cls.entity_map = DataStore.select_all()
+
+                return cls.prepare_display_info({index: cls.entity_map[index]})
             else:
-                print("Please provide an ID for updating.")
-        except:
-            logging.exception("ERROR IN update")
+                raise ValueError("Invalid index format")
+        except ValueError as ve:
+            logging.error(f"{index} IS NOT ACCEPTED AS ARGUMENT")
+            return DisplayInfo(error=True)
+        except Exception as e:
+            logging.exception("ERROR IN update:" + str(e))
+            return DisplayInfo(error=True, error_msg="Error in update")
 
     @classmethod
-    def delete(cls, arg):
+    def delete(cls, index: Union[int, str]) -> DisplayInfo:
         try:
-            if arg is not None:
-                success = cls.datastore.delete_data_by_id(arg)
-                if success:
-                    print(f"Deleted data with ID {arg}")
-                else:
-                    print(f"Data with ID {arg} not found.")
+            index = int(index)
+            if index is not None:
+                DataStore.delete(index)  # Placeholder logic for deleting data in the datastore
+                cls.entity_map = DataStore.select_all()  # Update entity_map after deletion
+
+                print(f"Deleted data with ID {index}")
+                return cls.prepare_display_info({index: cls.entity_map[index]})
             else:
                 print("Please provide an ID for deletion.")
-        except:
+                return DisplayInfo(error=True, error_msg="Please provide an ID for deletion.")
+        except Exception as e:
             logging.exception("ERROR IN delete")
+            return DisplayInfo(error=True, error_msg=str(e))
 
     @classmethod
     def prepare_display_info(cls,data:Dict[int,Otolith]) -> DisplayInfo:
