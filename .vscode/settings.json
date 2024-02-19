@@ -1,6 +1,0 @@
-{
-    "python.analysis.extraPaths": [
-        "./modules"
-    ],
-    "git.enabled": false
-}

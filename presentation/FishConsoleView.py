@@ -25,6 +25,7 @@ class FishConsoleView:
         try:
             exit = False
             while not exit:
+                # os.system('cls')
                 user_input = input("\nEnter your command (type 'help' for available commands)\n\n> ")
                 info(f"User entered \"{user_input}\"")
                 

@@ -1,0 +1,65 @@
+<diagram program="umletino" version="15.1"><zoom_level>9</zoom_level><help_text>Space for diagram notes</help_text><element><id>UMLClass</id><coordinates><x>162</x><y>216</y><w>252</w><h>135</h></coordinates><panel_attributes>Presentation::FishConsoleView
+--
+/_+ MENU_TEXT: str_/
+--
+start()
+process(raw_input)
+execute_action(action_set)
+execute(display_info: DisplayInfo): DisplayInfo
+prompt_update()
+__str__(): str
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>576</x><y>198</y><w>405</w><h>198</h></coordinates><panel_attributes>&lt;&lt;ServiceClass&gt;&gt;
+FishService
+--
+{entity_map: Dict[int, Otolith]}
+--
++execute_action(action_set) -&gt; DisplayInfo
++select(index: Union[int, str]) -&gt; DisplayInfo
++insert() -&gt; DisplayInfo
++update(index: int, column: str, new_val: Union[str, int]) -&gt; DisplayInfo
++delete(index: Union[int, str]) -&gt; DisplayInfo
++prepare_display_info(data: Dict[int, Otolith]) -&gt; DisplayInfo
+--
+Responsibilities
+-- Executes fish-related actions
+*-- Handles selection, insertion, updating, and deletion of fish-related data
+-- Prepares display information for fish-related data
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>1116</x><y>198</y><w>486</w><h>243</h></coordinates><panel_attributes>&lt;&lt;DataStoreClass&gt;&gt;
+DataStore
+--
+CURRENT_PATH: str, DATA_SOURCE: str
+DATA_FIELDS: List[str]
+MAX_ROWS: int
+dataframe: pd.DataFrame
+--
++load_dataframe() -&gt; None
++connect_database() -&gt; None
++select_all() -&gt; Dict[int, Otolith]
++select(index: int) -&gt; Otolith
++insert(data: List[List]) -&gt; None
++update(index: int, column: str, new_val: Union[str, int]) -&gt; None
++delete(index: int) -&gt; None
+--
+Responsibilities
+-- Represents a data store
+*-- Manages loading, connecting, selecting, inserting, updating, and deleting data
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>UMLClass</id><coordinates><x>225</x><y>45</y><w>72</w><h>27</h></coordinates><panel_attributes>launcher</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>252</x><y>63</y><w>27</w><h>171</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;170;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>405</x><y>252</y><w>189</w><h>27</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>190;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>405</x><y>288</y><w>189</w><h>27</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;10;190;10</additional_attributes></element><element><id>Relation</id><coordinates><x>972</x><y>261</y><w>162</w><h>27</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>160;10;10;10</additional_attributes></element><element><id>Relation</id><coordinates><x>972</x><y>315</y><w>162</w><h>27</h></coordinates><panel_attributes>lt=&lt;-</panel_attributes><additional_attributes>10;10;160;10</additional_attributes></element><element><id>UMLClass</id><coordinates><x>828</x><y>621</y><w>342</w><h>252</h></coordinates><panel_attributes>&lt;&lt;EntityClass&gt;&gt;
+Otolith
+--
+source: str
+latin_name: str
+english_name
+str, french_name
+str, year: int
+month: int
+number: int
+--
++get_attributes() -&gt; List
++get_fields() -&gt; List
++__str__() -&gt; str
+--
+Responsibilities
+-- Represents an otolith
+*-- Provides methods to retrieve attributes and fields
+-- Generates a formatted string representation of the DTO
+</panel_attributes><additional_attributes></additional_attributes></element><element><id>Relation</id><coordinates><x>756</x><y>378</y><w>90</w><h>270</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes><additional_attributes>80;290;10;290;12;19</additional_attributes></element><element><id>Relation</id><coordinates><x>1161</x><y>405</y><w>117</w><h>243</h></coordinates><panel_attributes>lt=&lt;&lt;&lt;&lt;-</panel_attributes><additional_attributes>10;260;100;260;102;19</additional_attributes></element></diagram>
