@@ -1,6 +1,6 @@
 from typing import Union, Dict
 from prettytable import PrettyTable
-from model.Otolith import Otolith
+from model.otolith import Otolith
 from persistence.DataStore import DataStore
 import logging
 

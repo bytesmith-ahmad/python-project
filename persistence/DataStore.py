@@ -5,7 +5,7 @@ from logging import info, exception, error, debug
 import os
 from typing import *
 import pandas as pd
-from model.Otolith import Otolith
+from model.otolith import Otolith
 
 class DataStore():
     """
