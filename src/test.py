@@ -19,5 +19,5 @@ def test_pathlib():
     p = Path('.')
     [x for x in p.iterdir() if x.is_dir()]
 
-# test_connect(otolith_db)
-test_pathlib()
+test_connect(otolith_db)
+# test_pathlib()
