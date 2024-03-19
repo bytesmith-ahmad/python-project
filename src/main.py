@@ -4,7 +4,6 @@
 
 from os import getcwd
 from logging import info
-from modules.my_module import *
 from presentation.FishConsoleView import *
 
 # get current path
