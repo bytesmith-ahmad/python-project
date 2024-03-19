@@ -1,14 +1,18 @@
-from pathlib import Path
+from pathlib import PureWindowsPath as Path
+# from pathlib import 
 from configparser import ConfigParser
 from os import system
 from utils import my_logger
 from persistence import datastore
 
-top = f"{__file__}\\.."
+# paths
+src = Path(__file__).parent
+ini = src / 'config.ini'
 
-config = ConfigParser()
-config.read(f"{top}\\config.ini")
-otolith_db = f"{top}\\{config['Datasources']['otolith']}"
+parser = ConfigParser()
+parser.read(ini)
+otolith_db = parser['Datasources']['otolith']
+otolith_db = src / otolith_db
 
 def test_connect(otolith_db):
     system('cls')
@@ -19,5 +23,4 @@ def test_pathlib():
     p = Path('.')
     [x for x in p.iterdir() if x.is_dir()]
 
-test_connect(otolith_db)
-# test_pathlib()
+# test_connect(otolith_db)

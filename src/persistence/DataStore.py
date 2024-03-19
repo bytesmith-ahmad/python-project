@@ -2,6 +2,7 @@
 
 import sqlite3
 from utils.my_logger import info, exception#, error, debug
+from pathlib import PureWindowsPath
 import os
 from typing import *
 import pandas as pd
@@ -27,9 +28,9 @@ class DataStore():
     #     # self.tables: list[str] = []
 
     @classmethod
-    def connect(cls,data_source: str) -> None:
+    def connect(cls,data_source: PureWindowsPath) -> None:
         info(f"Connecting to {data_source}...")
-        x = __file__
+
         con = sqlite3.connect(
             database=data_source,
             detect_types=sqlite3.PARSE_DECLTYPES
