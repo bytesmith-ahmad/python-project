@@ -1,5 +1,5 @@
 :: Runs launcher in interactive mode
 
-python ".\launcher.py"
+python "src\main.py"
 
 pause
