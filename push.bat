@@ -1,4 +1,10 @@
 @echo off
+
+echo Current branch:
+git branch
+echo Proceed?
+pause
+
 echo ==================================== START
 git diff
 echo ************************
