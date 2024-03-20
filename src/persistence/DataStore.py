@@ -10,25 +10,15 @@ import pandas as pd
 class DataStore():
     """
     A class representing a data store.
-
-    Attributes:
-    - CURRENT_PATH (str): The current working directory.
-    - DATA_SOURCE (str): The path to the CSV file as the data source.
-    - DATA_FIELDS (List[str]): Aliases for fields.
-    - MAX_ROWS (int): The maximum number of rows to display.
-    - dataframe (pd.DataFrame): The DataFrame containing the data.
     """
     
     connection: sqlite3.Connection = None
-    
-    # def __init__(self,data_source:str=None) -> Self:
-    #     info("Intializing Datastore")
-    #     # self.config = self.load_settings()  # Parse config.ini
-    #     # self.connection = None
-    #     # self.tables: list[str] = []
+    operations: dict[int:str] = None
 
     @classmethod
     def connect(cls,data_source: PureWindowsPath) -> None:
+        """Connects to database and configures connection"""
+        
         info(f"Connecting to {data_source}...")
 
         con = sqlite3.connect(
@@ -41,139 +31,45 @@ class DataStore():
             info(f"Successfully connected to SQLite version {value}")
         cls.connection = con
         
-    #TODO ************************************************************
-
-    # CURRENT_PATH: str = os.getcwd()
-    # DATA_SOURCE: str = None
-    # DATA_FIELDS: List[str] = None  # aliases for fields
-    # MAX_ROWS: int = 100
-    # dataframe: pd.DataFrame = None
-
-    # @classmethod
-    # def load_dataframe(cls) -> None:
-    #     """
-    #     Load DataFrame from the CSV file.
-    #     """
-    #     info("Loading dataframe...")
-    #     if cls.DATA_SOURCE is None:
-    #         cls.connect_database()
-    #     pd.options.display.max_rows = cls.MAX_ROWS  # Will not display more than 100 records
-    #     cls.dataframe = pd.read_csv(cls.DATA_SOURCE)
-    #     cls.DATA_FIELDS = list(cls.dataframe.columns)
-
-    
-    
-    # @classmethod
-    # def connect_database(cls) -> None:
-    #     """
-    #     Connect to the data source.
-    #     """
-    #     try:
-    #         config = configparser.ConfigParser()
-    #         config.read('config.ini')
-    #         cls.DATA_SOURCE = config.get('database', 'csv_path')
-    #     except FileNotFoundError:
-    #         error("\033[31mconfig.ini NOT FOUND! Place one next to launcher.py\033[0m")
-    #     except:
-    #         exception("\033[31mERROR: Something went wrong attempting to read [database] from config.ini\033[0m")
-    #     else:
-    #         info(f"\033[92mCONNECTED TO DATABASE\033[0m: {cls.CURRENT_PATH}\\{cls.DATA_SOURCE}")
-
-    # @classmethod
-    # def select_all(cls) -> Dict[int, Otolith]:
-    #     """
-    #     Execute SELECT_ALL operation.
-
-    #     Returns:
-    #     - Dict[int, Otolith]: A dictionary containing selected data.
-    #     """
-    #     try:
-    #         info("Executing SELECT_ALL...")
-    #         if cls.dataframe is None:
-    #             cls.load_dataframe()
-    #         dataset = {}
-    #         for i in range(len(cls.dataframe.index)):
-    #             dataset[i] = cls.select(i)
-    #         return dataset
-    #     except Exception as e:
-    #         exception(e)
-
-    # @classmethod
-    # def select(cls, index: int) -> Otolith:
-    #     """
-    #     Execute SELECT operation.
-
-    #     Parameters:
-    #     - index (int): The index of the data to select.
-
-    #     Returns:
-    #     - Otolith: An instance of the Otolith class.
-    #     """
-    #     try:
-    #         debug("Executing SELECT...")
-    #         series = cls.dataframe.loc[index]
-    #         return Otolith(
-    #             source=series.loc[cls.DATA_FIELDS[0]],
-    #             latin_name=series.loc[cls.DATA_FIELDS[1]],
-    #             english_name=series.loc[cls.DATA_FIELDS[2]],
-    #             french_name=series.loc[cls.DATA_FIELDS[3]],
-    #             year=series.loc[cls.DATA_FIELDS[4]],
-    #             month=series.loc[cls.DATA_FIELDS[5]],
-    #             number=series.loc[cls.DATA_FIELDS[6]]
-    #         )
-    #     except Exception as e:
-    #         pass
-
-    # @classmethod
-    # def insert(cls, data: List[List]) -> None:
-    #     """
-    #     Execute INSERT operation.
-
-    #     Parameters:
-    #     - data (List[List]): The data to be inserted.
-    #     """
-    #     try:
-    #         info("Executing INSERT...")
-    #         new_df = pd.DataFrame(data, columns=list(cls.dataframe.columns))
-    #         cls.dataframe = pd.concat([cls.dataframe, new_df])
-    #         cls.dataframe.to_csv(cls.DATA_SOURCE, index=False)
-    #         cls.load_dataframe()
-    #     except Exception as e:
-    #         pass
-
-    # @classmethod
-    # def update(cls, index: int, column: str, new_val: Union[str, int]) -> None:
-    #     """
-    #     Execute UPDATE operation.
-
-    #     Parameters:
-    #     - index (int): The index of the data to be updated.
-    #     - column (str): The column to be updated.
-    #     - new_val (Union[str, int]): The new value to set in the specified column.
-    #     """
-    #     try:
-    #         info("Executing UPDATE...")
-    #         cls.dataframe.loc[index, column] = new_val
-    #         cls.dataframe.to_csv(cls.DATA_SOURCE, index=False)
-    #         cls.load_dataframe()
-    #     except Exception as e:
-    #         pass
-
-    # @classmethod
-    # def delete(cls, index: int) -> None:
-    #     """
-    #     Execute DELETE operation.
-
-    #     Parameters:
-    #     - index (int): The index of the data to be deleted.
-    #     """
-    #     try:
-    #         info("Executing DELETE...")
-    #         cls.dataframe = cls.dataframe.drop(index)
-    #         cls.dataframe.to_csv(cls.DATA_SOURCE, index=False)
-    #         cls.load_dataframe()
-    #     except Exception as e:
-    #         pass
+    @classmethod
+    def initialize(cls) -> dict[int:str]:
+        ops = {}
+        table = "NAFO_4T_otoliths"
+        ops['COLUMNS'] = f"SELECT name FROM pragma_table_info('{table}');"
+        ops['SELECT_ALL'] = f"SELECT * FROM {table}"
+        ops['SELECT_ONE'] = f"SELECT * FROM {table} WHERE rowid = :rowid"
+        ops['INSERT'] = f"INSERT INTO {table} VALUES (:source, :latin, :english, :french, :year, :month, :number)"
+        ops['UPDATE'] = f"UPDATE {table} SET :col = :val WHERE rowid = :rowid"
+        ops['DELETE'] = f"DELETE FROM {table} WHERE rowid = :rowid"
+        cls.operations = ops
+        
+    @classmethod
+    def execute(cls,operation: str, params: dict = None) -> sqlite3.Row:
+        """Provide a valid SQL query with paramaters OR one of the following with appropriate params:\n
+COLUMNS: --\nSELECT_ALL: --\nSELECT_ONE: rowid\nINSERT: source, latin, english, french, year, month, number\n
+UPDATE: rowid, column, value\nDELETE: rowid\nCOMMIT: --\n
+        """
+        if cls.operations is None:
+            cls.initialize()
+        if operation.upper() in ['COLUMNS', 'SELECT_ALL','SELECT_ONE','INSERT','UPDATE','DELETE']:
+            op = cls.operations[operation.upper()]
+            if params is None:
+                return cls.connection.execute(op).fetchall()
+            else:
+                return cls.connection.execute(op,params).fetchall()
+        elif operation.upper() == 'COMMIT':
+            cls.connection.commit()
+        elif operation.upper() == 'CLOSE':
+            cls.connection.close()
+        else:
+            return cls.connection.execute(operation,params).fetchall()
+        
+    @staticmethod
+    def get_val(rows: list[sqlite3.Row]):
+        array = []
+        for row in rows:
+            array += [[val for val in row]]
+        return array
 
 if __name__ == "__main__":
     # TODO TEST CODE HERE
