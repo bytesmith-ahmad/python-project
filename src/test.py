@@ -1,36 +1,64 @@
 from pathlib import PureWindowsPath as Path
-# from pathlib import 
 from configparser import ConfigParser
 from os import system
 from utils import my_logger
 from persistence.datastore import DataStore
+from pypika import Query, Table, Field
 
-# paths
+# parent folder
 src = Path(__file__).parent
-ini = src / 'config.ini'
 
+# setup
 parser = ConfigParser()
-parser.read(ini)
-otolith_db = parser['Datasources']['otolith']
-otolith_db = src / otolith_db
+parser.read(src / 'config.ini')
+db_name = src / parser['Datasources']['otolith']
+table_name = 'NAFO_4T_otoliths'
 
-def test_connect(otolith_db):
-    system('cls')
-    ds = DataStore()
-    ds.connect(otolith_db)
+class Otolith:
+    def __init__(self,
+        source,latin_name,english_name,
+        french_name,year,month,number):
+        self.source = source
+        self.latin_name = latin_name
+        self.english_name = english_name
+        self.french_name = french_name
+        self.year = year
+        self.month = month
+        self.number = number
     
-def test_pathlib():
-    p = Path('.')
-    [x for x in p.iterdir() if x.is_dir()]
+    def as_dict(self):
+        return vars(self)
+    
+    def as_list(self):
+        return list(vars(self).values())
+    
+    def get_keys(self):
+        return list(vars(self).keys())
 
-def test_select(ds:DataStore):
-    rows = ds.execute('columns')
-    columns = [col[0] for col in ds.get_val(rows)]
-    rows1 = ds.execute('SELECT_ALL')
-    rows2 = ds.execute('SELECT_ONE',{'rowid':1})
-    pass
+def connect(db):
+    return DataStore(db)
 
-def test_update(ds):
+def select_all(db,table_name):
+    q = Query().from_(table_name).select('*')
+    rep = db.execute(q)
+    return rep
+
+def select(db,table_name):
+    columns = ['source','english_name','year']
+    q = Query().from_(table_name).select(*columns) # * is for unpacking
+    rep = db.execute(q)
+    return rep
+
+def insert(db,table_name):
+    data = [
+        Otolith('sdf','sdfs','sdfsd','sdfs',3454,65,88).as_list(),
+        Otolith('fgh','fgh','fgh','gh',566,45,645).as_list(),
+        Otolith('fg','jh','df','jnhb',5996,34,86).as_list()
+    ]
+    q = Query().into(table_name).insert(data)
+    rows = db.execute(q)
+
+def update(ds):
     dic = {'source':'src', 'latin':'latin', 'english':'english', 'french':'french', 'year':9999, 'month':12, 'number':99}
     res1 = ds.execute('INSERT',dic) #empty
     res1 = ds.execute('INSERT',dic)
@@ -40,9 +68,20 @@ def test_update(ds):
     res3 = ds.execute('DELETE',dic)
     pass
 
+def delete(d):
+    pass
+
+# TODO Begin tests
+
 system('cls')
-ds = DataStore()
-ds.connect(otolith_db)
-    
-test_update(ds)
-test_select(ds)
+
+db = connect(db_name)
+select_all(db,table_name)
+select(db,table_name)
+X = insert(db,table_name)
+(x,y) = (
+    X.get_columns(),
+    X.get_values()
+)
+update(ds,table_name)
+delete(ds,table_name)
