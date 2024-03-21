@@ -1,1 +1,0 @@
-UPDATE :table SET :col = :val WHERE rowid = :id

@@ -1,6 +1,3 @@
-from typing import List
-
-
 class Otolith:
     """
     Represents an otolith.
@@ -13,14 +10,15 @@ class Otolith:
         year (int): The year of the otolith data.
         month (int): The month of the otolith data.
         number (int): The number of otoliths.
-
-    Methods:
-        __str__(): Returns a formatted string representation of the DTO.
     """
-    def __init__(self, source: str, latin_name: str, english_name: str, french_name: str, year: int, month: int, number: int):
+    def __init__(self,
+        source: str = None, latin_name: str = None, english_name: str = None,
+        french_name: str = None, year: int = None, month: int = None, number: int = None,
+        **kwargs):
         """
         Initializes an Otolith instance with the provided attributes.
         """
+        #* Option 1: use attributes
         self.source = source
         self.latin_name = latin_name
         self.english_name = english_name
@@ -28,32 +26,33 @@ class Otolith:
         self.year = year
         self.month = month
         self.number = number
+        
+        #nevermind
+        # Option 2: alternatively, use kwargs if filter is applied at SELECT
+        # for key, value in kwargs.items():
+        #     setattr(self, key, value)
 
-    def get_attributes(self) -> List:
+    # def map(self, **kwargs):
+    #     """
+    #     Initializes an Otolith instance with the provided attributes.
+    #     """
+    #     for key, value in kwargs.items():
+    #         setattr(self, key, value)
+
+    def as_values(self) -> list:
         """
         Returns a list of attribute values.
 
         Returns:
             List: A list containing attribute values.
         """
-        return list(vars(self).values())
+        return [v for v in vars(self).values() if v is not None]
 
-    def get_fields(self) -> List:
+    def as_keys(self) -> list:
         """
         Returns a list of attribute names.
 
         Returns:
             List: A list containing attribute names.
         """
-        return list(vars(self).keys())
-
-    def __str__(self) -> str:
-        """
-        Returns a formatted string representation of the DTO.
-
-        Returns:
-            str: A string representation of the DTO.
-        """
-        return f"Otolith(source={self.source}, latin_name={self.latin_name}, " \
-               f"english_name={self.english_name}, french_name={self.french_name}, " \
-               f"year={self.year}, month={self.month}, number={self.number})"
+        return [k for k,v in vars(self).items() if v is not None]

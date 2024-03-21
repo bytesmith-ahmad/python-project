@@ -4,6 +4,7 @@ from os import system
 from utils import my_logger
 from persistence.datastore import DataStore
 from pypika import Query, Table, Field
+from business.models.otolith import Otolith
 
 # parent folder
 src = Path(__file__).parent
@@ -12,28 +13,25 @@ src = Path(__file__).parent
 parser = ConfigParser()
 parser.read(src / 'config.ini')
 db_name = src / parser['Datasources']['otolith']
-table_name = 'NAFO_4T_otoliths'
+table = Table('NAFO_4T_otoliths')
 
-class Otolith:
-    def __init__(self,
-        source,latin_name,english_name,
-        french_name,year,month,number):
-        self.source = source
-        self.latin_name = latin_name
-        self.english_name = english_name
-        self.french_name = french_name
-        self.year = year
-        self.month = month
-        self.number = number
+# class Otolith:
+#     def __init__(self,
+#         source,latin_name,english_name,
+#         french_name,year,month,number):
+#         self.source = source
+#         self.latin_name = latin_name
+#         self.english_name = english_name
+#         self.french_name = french_name
+#         self.year = year
+#         self.month = month
+#         self.number = number
     
-    def as_dict(self):
-        return vars(self)
+#     def as_list(self):
+#         return list(vars(self).values())
     
-    def as_list(self):
-        return list(vars(self).values())
-    
-    def get_keys(self):
-        return list(vars(self).keys())
+#     def get_keys(self):
+#         return list(vars(self).keys())
 
 def connect(db):
     return DataStore(db)
@@ -43,7 +41,7 @@ def select_all(db,table_name):
     rep = db.execute(q)
     return rep
 
-def select(db,table_name):
+def select(db,table_name) -> DataStore.Report:
     columns = ['source','english_name','year']
     q = Query().from_(table_name).select(*columns) # * is for unpacking
     rep = db.execute(q)
@@ -51,12 +49,13 @@ def select(db,table_name):
 
 def insert(db,table_name):
     data = [
-        Otolith('sdf','sdfs','sdfsd','sdfs',3454,65,88).as_list(),
-        Otolith('fgh','fgh','fgh','gh',566,45,645).as_list(),
-        Otolith('fg','jh','df','jnhb',5996,34,86).as_list()
+        Otolith('sdf','sdfs','sdfsd','sdfs',3454,65,88),
+        Otolith('fgh','fgh','fgh','gh',566,45,645),
+        Otolith('fg','jh','df','jnhb',5996,34,86)
     ]
-    q = Query().into(table_name).insert(data)
-    rows = db.execute(q)
+    q = Query().into(table).insert(*[o.as_list() for o in data])
+    rep = db.execute(q)
+    return rep
 
 def update(ds):
     dic = {'source':'src', 'latin':'latin', 'english':'english', 'french':'french', 'year':9999, 'month':12, 'number':99}
@@ -71,17 +70,27 @@ def update(ds):
 def delete(d):
     pass
 
+def map_to_otolith(db,table):
+    rep = select(db,table)
+    row = rep.rows[0]
+    otos = []
+    for row in rep.rows:
+        otos += [Otolith(**row)]
+    pass
+    return otos[0]
+
 # TODO Begin tests
 
 system('cls')
 
 db = connect(db_name)
-select_all(db,table_name)
-select(db,table_name)
-X = insert(db,table_name)
-(x,y) = (
-    X.get_columns(),
-    X.get_values()
-)
-update(ds,table_name)
-delete(ds,table_name)
+# select_all(db,table)
+# select(db,table)
+# insert(db,table)s
+#todo update(ds,table)
+#todo delete(ds,table)
+#todo commit(ds,table)
+otolith = map_to_otolith(db,table)
+v = otolith.as_values()
+k = otolith.as_keys()
+pass

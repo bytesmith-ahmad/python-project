@@ -14,8 +14,9 @@ class DataStore():
     
     class Report: # wrapper for sqlite list of rows
         """Wrapper for sqlite3 Rows"""
-        def __init__(self, error: sqlite3.Error = None, table: str = None, rows: list[sqlite3.Row] = None):
+        def __init__(self, error: sqlite3.Error = None, operation: str = None, table: str = None, rows: list[sqlite3.Row] = None):
             self.error = error
+            self.oper = operation
             self.table = table
             # self.cols = None
             self.rows = rows
@@ -61,28 +62,34 @@ class DataStore():
     
     def execute(self,sql: Query) -> Report:
         try:
-            e = None
             t = self.get_table_name(sql)
-            t = sql._from[0]._table_name
-            r = self.connection.execute(str(sql)).fetchall()
-            if len(r) == 0:
-                r = self.connection.execute(f"SELECT * FROM {t}").fetchall()
+            rows = self.connection.execute(str(sql)).fetchall()
+            if rows == []:
+                rows = self.connection.execute(f"SELECT * FROM {t}").fetchall()
+            r = self.Report(table=t,rows=rows)
         except sqlite3.Error as sql_e:
-            e = sql_e
+            r = self.Report(error=sql_e)
         except Exception as ex:
-            e = ex
+            r = self.Report(error=ex)
         finally:
-            return self.Report(
-                error=e,
-                table=t,
-                rows=r
-            )
+            return r
 
     @staticmethod
-    def get_table_name(sql:Query):
-        t = sql._from[0]._table_name
-        if t is None:
-            pass
+    def get_table_name(sql:Query) -> str:
+        """Extracts table name from query, doesn't not work for all queries"""
+        if bool(sql._from):
+            """SELECT""" # for future use
+            t = sql._from[0]._table_name
+        elif bool(sql._insert_table):
+            """INSERT"""
+            t = sql._insert_table._table_name
+        elif bool(sql._update_table):
+            """UPDATE"""
+            t = sql._update_table._table_name
+        else:
+            """unknown"""
+            t = "\033[31mNOT FOUND\033[0m"
+        return t
 
     @staticmethod
     def toCSV(data,fname="output.csv"):
