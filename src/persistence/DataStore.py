@@ -1,7 +1,7 @@
 # Code by Ahmad Al-Jabbouri
 
 import sqlite3
-from pypika import Query
+from pypika import Query, Table, Field
 from utils.my_logger import info, exception
 from pathlib import PureWindowsPath as Path
 
@@ -59,14 +59,28 @@ class DataStore():
         
     def commit(self) -> None:
         self.connection.commit()
+        
+    def get_tables(self) -> list[str]:
+        rows = self.connection.execute(
+            """SELECT name FROM sqlite_master WHERE
+            type = 'table' AND name NOT LIKE 'sqlite%';"""
+        ).fetchall()
+        return [Table(v) for row in rows for v in row]
     
-    def execute(self,sql: Query) -> Report:
+    def get_fields(self,T:Table) -> list[str]:
+        rows = self.connection.execute(
+            f"SELECT name FROM pragma_table_info({str(T)})"
+        ).fetchall()
+        return [T.field(v) for row in rows for v in row]
+
+    def execute(self,sql: Query, rowid = True) -> Report:
         try:
-            t = self.get_table_name(sql)
-            rows = self.connection.execute(str(sql)).fetchall()
+            table = self.get_table_name(sql)
+            sql = str(sql).replace('*','rowid AS id, *') if rowid else str(sql)
+            rows = self.connection.execute(sql).fetchall()
             if rows == []:
-                rows = self.connection.execute(f"SELECT * FROM {t}").fetchall()
-            r = self.Report(table=t,rows=rows)
+                rows = self.connection.execute(f"SELECT rowid AS id, * FROM {table}").fetchall()
+            r = self.Report(table=table,rows=rows)
         except sqlite3.Error as sql_e:
             r = self.Report(error=sql_e)
         except Exception as ex:
@@ -79,13 +93,13 @@ class DataStore():
         """Extracts table name from query, doesn't not work for all queries"""
         if bool(sql._from):
             """SELECT""" # for future use
-            t = sql._from[0]._table_name
+            t = sql._from[0].get_table_name()
         elif bool(sql._insert_table):
             """INSERT"""
-            t = sql._insert_table._table_name
+            t = sql._insert_table.get_table_name()
         elif bool(sql._update_table):
             """UPDATE"""
-            t = sql._update_table._table_name
+            t = sql._update_table.get_table_name()
         else:
             """unknown"""
             t = "\033[31mNOT FOUND\033[0m"
@@ -125,45 +139,6 @@ class DataStore():
             ret.append(((hi,hi_t),(lo,lo_t),avg))
 
         return ret
-
-#TODO ############################################
-    def old_execute(cls,operation: str, params: dict = None) -> sqlite3.Row:
-        """Provide a valid SQL query with paramaters OR one of the following with appropriate params:\n
-COLUMNS: --\nSELECT_ALL: --\nSELECT_ONE: rowid\nINSERT: source, latin, english, french, year, month, number\n
-UPDATE: rowid, column, value\nDELETE: rowid\nCOMMIT: --\n
-        """
-        if cls.operations is None:
-            cls.initialize()
-        if operation.upper() in ['COLUMNS', 'SELECT_ALL','SELECT_ONE','INSERT','UPDATE','DELETE']:
-            op = cls.operations[operation.upper()]
-            if params is None:
-                return cls.connection.execute(op).fetchall()
-            else:
-                return cls.connection.execute(op,params).fetchall()
-        elif operation.upper() == 'COMMIT':
-            cls.connection.commit()
-        elif operation.upper() == 'CLOSE':
-            cls.connection.close()
-        else:
-            return cls.connection.execute(operation,params).fetchall()
-
-    @classmethod
-    def initialize(cls,table) -> dict[int:str]:
-        ops = {}
-        ops['COLUMNS'] = f"SELECT name FROM pragma_table_info('{table}');"
-        ops['SELECT_ALL'] = f"SELECT * FROM {table}"
-        ops['SELECT_ONE'] = f"SELECT * FROM {table} WHERE rowid = :rowid"
-        ops['INSERT'] = f"INSERT INTO {table} VALUES (:source, :latin, :english, :french, :year, :month, :number)"
-        ops['UPDATE'] = f"UPDATE {table} SET :col = :val WHERE rowid = :rowid"
-        ops['DELETE'] = f"DELETE FROM {table} WHERE rowid = :rowid"
-        cls.operations = ops
-        
-    @staticmethod
-    def get_val(rows: list[sqlite3.Row]):
-        array = []
-        for row in rows:
-            array += [[val for val in row]]
-        return array
 
 if __name__ == "__main__":
     # TODO TEST CODE HERE

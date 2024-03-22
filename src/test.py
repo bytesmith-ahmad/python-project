@@ -15,82 +15,69 @@ parser.read(src / 'config.ini')
 db_name = src / parser['Datasources']['otolith']
 table = Table('NAFO_4T_otoliths')
 
-# class Otolith:
-#     def __init__(self,
-#         source,latin_name,english_name,
-#         french_name,year,month,number):
-#         self.source = source
-#         self.latin_name = latin_name
-#         self.english_name = english_name
-#         self.french_name = french_name
-#         self.year = year
-#         self.month = month
-#         self.number = number
-    
-#     def as_list(self):
-#         return list(vars(self).values())
-    
-#     def get_keys(self):
-#         return list(vars(self).keys())
-
 def connect(db):
     return DataStore(db)
 
-def select_all(db,table_name):
-    q = Query().from_(table_name).select('*')
+def select(db,t,columns = '*',rowid=True) -> DataStore.Report:
+    q = t.select('rowid', *columns) # * is for unpacking
     rep = db.execute(q)
     return rep
 
-def select(db,table_name) -> DataStore.Report:
-    columns = ['source','english_name','year']
-    q = Query().from_(table_name).select(*columns) # * is for unpacking
-    rep = db.execute(q)
-    return rep
-
-def insert(db,table_name):
+def insert(db,t):
     data = [
         Otolith('sdf','sdfs','sdfsd','sdfs',3454,65,88),
         Otolith('fgh','fgh','fgh','gh',566,45,645),
         Otolith('fg','jh','df','jnhb',5996,34,86)
     ]
-    q = Query().into(table).insert(*[o.as_list() for o in data])
+    q = t.insert(*[o.as_values() for o in data])
     rep = db.execute(q)
     return rep
 
-def update(ds):
-    dic = {'source':'src', 'latin':'latin', 'english':'english', 'french':'french', 'year':9999, 'month':12, 'number':99}
-    res1 = ds.execute('INSERT',dic) #empty
-    res1 = ds.execute('INSERT',dic)
-    dic = {'col':'number','val':0,'rowid':1}
-    res2 = ds.execute('UPDATE',dic)
-    dic = {'rowid':1}
-    res3 = ds.execute('DELETE',dic)
+def update(db:DataStore,t,field):
+    q = t.update().set('number', 55).where(field == 2)
+    db.execute(q)
     pass
 
 def delete(d):
     pass
 
-def map_to_otolith(db,table):
-    rep = select(db,table)
-    row = rep.rows[0]
+def map_to_otolith(rows) -> list[Otolith]:
     otos = []
-    for row in rep.rows:
+    for row in rows:
         otos += [Otolith(**row)]
-    pass
     return otos[0]
 
 # TODO Begin tests
 
 system('cls')
 
-db = connect(db_name)
-# select_all(db,table)
-# select(db,table)
-# insert(db,table)s
-#todo update(ds,table)
-#todo delete(ds,table)
-#todo commit(ds,table)
-otolith = map_to_otolith(db,table)
-v = otolith.as_values()
-k = otolith.as_keys()
+# D > T > C > R
+D = connect(db_name)     #* success
+T = D.get_tables()       #* success
+C = D.get_fields(T[0])   #* success
+
+s1 = select(D,T[0]) #* success
+
+chosen_cols = [1, 3, 6]
+c = [C[i] for i in chosen_cols]
+s2 = select(D,T[0],c)   #* success
+
+map_to_otolith(s1.rows) #* success
+
+insert(D,Table(T[0]))
+
+update(D,Table(T[0]),'rowid')
+
+delete(ds,table) #todo
+
+commit(ds,table) #todo
+
+# menu0() #optional, choose table
+
+menu1() #todo choose op: select, insert, update, delete
+
+menu2() #todo choose columns/vals: S:(cols), I:(*otolith), U:(icol,id,col,val), D:(icol,val)
+
+menu3() #todo choose commit: commit? [Y/N] 
+
 pass

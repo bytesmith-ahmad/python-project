@@ -12,13 +12,13 @@ class Otolith:
         number (int): The number of otoliths.
     """
     def __init__(self,
-        source: str = None, latin_name: str = None, english_name: str = None,
+        id: int = None, source: str = None, latin_name: str = None, english_name: str = None,
         french_name: str = None, year: int = None, month: int = None, number: int = None,
         **kwargs):
         """
         Initializes an Otolith instance with the provided attributes.
         """
-        #* Option 1: use attributes
+        self.id = id
         self.source = source
         self.latin_name = latin_name
         self.english_name = english_name
@@ -26,18 +26,6 @@ class Otolith:
         self.year = year
         self.month = month
         self.number = number
-        
-        #nevermind
-        # Option 2: alternatively, use kwargs if filter is applied at SELECT
-        # for key, value in kwargs.items():
-        #     setattr(self, key, value)
-
-    # def map(self, **kwargs):
-    #     """
-    #     Initializes an Otolith instance with the provided attributes.
-    #     """
-    #     for key, value in kwargs.items():
-    #         setattr(self, key, value)
 
     def as_values(self) -> list:
         """
