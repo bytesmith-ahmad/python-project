@@ -18,6 +18,9 @@ table = Table('NAFO_4T_otoliths')
 def connect(db):
     return DataStore(db)
 
+def commit(db:DataStore):
+    db.commit()
+
 def select(db,t,columns = '*',rowid=True) -> DataStore.Report:
     q = t.select('rowid', *columns) # * is for unpacking
     rep = db.execute(q)
@@ -25,7 +28,7 @@ def select(db,t,columns = '*',rowid=True) -> DataStore.Report:
 
 def insert(db,t):
     data = [
-        Otolith('sdf','sdfs','sdfsd','sdfs',3454,65,88),
+        Otolith('sdf','sdfs','sdfsd','sdfs',3454,65,88), #! SINGLE QUOTES BREAK PROGRAM
         Otolith('fgh','fgh','fgh','gh',566,45,645),
         Otolith('fg','jh','df','jnhb',5996,34,86)
     ]
@@ -64,20 +67,18 @@ s2 = select(D,T[0],c)   #* success
 
 map_to_otolith(s1.rows) #* success
 
-insert(D,Table(T[0]))
+insert(D,Table(T[0])) #! FAIL
 
-update(D,Table(T[0]),'rowid')
+update(D,Table(T[0]),Field('rowid')) #! TODO
 
-delete(ds,table) #todo
+delete(ds,table) #! TODO
 
-commit(ds,table) #todo
+commit(ds,table) #^ NOT TESTED
 
 # menu0() #optional, choose table
-
+#! TODO
 menu1() #todo choose op: select, insert, update, delete
-
+#! TODO
 menu2() #todo choose columns/vals: S:(cols), I:(*otolith), U:(icol,id,col,val), D:(icol,val)
-
+#! TODO
 menu3() #todo choose commit: commit? [Y/N] 
-
-pass

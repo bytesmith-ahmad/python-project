@@ -76,6 +76,7 @@ class DataStore():
     def execute(self,sql: Query, rowid = True) -> Report:
         try:
             table = self.get_table_name(sql)
+            #! THIS v WILL INTRODUCES BACKSLASHES IF QUERY CONTAINS SINGLE-QUOTES
             sql = str(sql).replace('*','rowid AS id, *') if rowid else str(sql)
             rows = self.connection.execute(sql).fetchall()
             if rows == []:
