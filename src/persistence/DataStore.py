@@ -11,28 +11,6 @@ class DataStore():
     """
 
     persistence = Path(__file__).parent
-    
-    class Report: # wrapper for sqlite list of rows
-        """Wrapper for sqlite3 Rows"""
-        def __init__(self, error: sqlite3.Error = None, operation: str = None, table: str = None, rows: list[sqlite3.Row] = None):
-            self.error = error
-            self.oper = operation
-            self.table = table
-            # self.cols = None
-            self.rows = rows
-
-        def has_error(self):
-            """Check if """
-            return True if self.error else False
-
-        def get_values(self) -> list[list]:
-            l = []
-            for row in self.rows:
-                l += [[val for val in row]]
-            return l
-
-        def get_columns(self):
-            return self.rows[0].keys() # get keys from first row in list
 
     def __init__(self, db_path: Path = None):
         self.connection: sqlite3.Connection = None
@@ -73,27 +51,38 @@ class DataStore():
         ).fetchall()
         return [T.field(v) for row in rows for v in row]
 
-    def execute(self,sql: Query, rowid = True) -> Report:
+    def execute(self,sql: Query, rowid = True) -> "Report":
         try:
-            table = self.get_table_name(sql)
-            #! THIS v WILL INTRODUCES BACKSLASHES IF QUERY CONTAINS SINGLE-QUOTES
-            sql = str(sql).replace('*','rowid AS id, *') if rowid else str(sql)
-            rows = self.connection.execute(sql).fetchall()
+            con = self.connection
+            rep = self.Report(sql=sql)
+            sql = str(sql).replace("*","rowid AS id, *") if rowid else str(sql)
+            rows = con.execute(sql).fetchall()
             if rows == []:
-                rows = self.connection.execute(f"SELECT rowid AS id, * FROM {table}").fetchall()
-            r = self.Report(table=table,rows=rows)
+                table = self.get_table_name(rep.sql)
+                rows = con.execute(f"SELECT rowid AS id, * FROM {table}").fetchall()
+            rep.rows = self.reveal(rows)
         except sqlite3.Error as sql_e:
-            r = self.Report(error=sql_e)
+            rep.error = sql_e
         except Exception as ex:
-            r = self.Report(error=ex)
+            rep.error = ex
         finally:
-            return r
+            return rep
+
+    def reveal(self,rows) -> list[dict[str]]:
+        revealed_rows = []
+        column_names = [column for column in rows[0].keys()]
+        for row in rows:
+            revealed_row = {}
+            for c in column_names:
+                revealed_row[c] = row[c]
+            revealed_rows.append(revealed_row)
+        return revealed_rows
 
     @staticmethod
     def get_table_name(sql:Query) -> str:
         """Extracts table name from query, doesn't not work for all queries"""
         if bool(sql._from):
-            """SELECT""" # for future use
+            """SELECT or DELETE""" # for future use
             t = sql._from[0].get_table_name()
         elif bool(sql._insert_table):
             """INSERT"""
@@ -140,6 +129,26 @@ class DataStore():
             ret.append(((hi,hi_t),(lo,lo_t),avg))
 
         return ret
+    
+    class Report: # wrapper for sqlite list of rows
+        """Wrapper for sqlite3 Rows"""
+        def __init__(self, error: sqlite3.Error = None, sql: Query = None, rows: list[sqlite3.Row] = None):
+            self.error = error
+            self.sql = sql
+            self.rows = rows
+
+        def has_error(self):
+            """Check if """
+            return True if self.error else False
+
+        def get_values(self) -> list[list]:
+            l = []
+            for row in self.rows:
+                l += [[val for val in row]]
+            return l
+
+        def get_columns(self):
+            return self.rows[0].keys() # get keys from first row in list
 
 if __name__ == "__main__":
     # TODO TEST CODE HERE

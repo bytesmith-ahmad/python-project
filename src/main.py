@@ -1,19 +1,18 @@
 # Code by Ahmad Al-Jabbouri
 
-#todo This package requires to be at the top level lest all imports will fail!
-
-from os import getcwd
+from pathlib import Path
 from logging import info
-from presentation.FishConsoleView import *
+from presentation.view import View
+from utils.signature import sign
 
 # get current path
-current_path = getcwd()
-info(f"Operating from: {current_path}")
+src = Path(__file__).parent
+info(f"Operating from: {src}")
 
 # call consoleview
-FishConsoleView.start() # loop
+View.start() # loop
 info("Program closed")
 
 # signature
 sign()
-print(f"\033[2mSee logs at: {current_path}\\.log\033[0m\n")
+print(f"\033[2mSee logs at: {src/".log"}\033[0m\n")

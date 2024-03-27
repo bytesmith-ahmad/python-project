@@ -23,26 +23,26 @@ def commit(db:DataStore):
 
 def select(db,t,columns = '*',rowid=True) -> DataStore.Report:
     q = t.select('rowid', *columns) # * is for unpacking
-    rep = db.execute(q)
-    return rep
+    return db.execute(q)
 
-def insert(db,t):
-    data = [
-        Otolith('sdf','sdfs','sdfsd','sdfs',3454,65,88), #! SINGLE QUOTES BREAK PROGRAM
-        Otolith('fgh','fgh','fgh','gh',566,45,645),
-        Otolith('fg','jh','df','jnhb',5996,34,86)
-    ]
-    q = t.insert(*[o.as_values() for o in data])
-    rep = db.execute(q)
-    return rep
+def insert(db,table: Table, data: list[object]):    
+    return db.execute(
+        table.insert(*[o.as_values() for o in data])
+    )
 
-def update(db:DataStore,t,field):
-    q = t.update().set('number', 55).where(field == 2)
-    db.execute(q)
-    pass
+def update(db:DataStore,table: Table,target: Field, value,
+           identifying_column: Field, identifying_value):
+    return db.execute(
+        table.update()
+        .set(target, value)
+        .where(identifying_column == identifying_value)
+    )
 
-def delete(d):
-    pass
+def delete(db:DataStore,table: Table, rowid: int):
+    """Query.from_(table).delete().where(table.id == id)"""
+    return db.execute(
+        Query().from_(table).delete().where(Field('rowid') == rowid)
+    )
 
 def map_to_otolith(rows) -> list[Otolith]:
     otos = []
@@ -67,13 +67,19 @@ s2 = select(D,T[0],c)   #* success
 
 map_to_otolith(s1.rows) #* success
 
-insert(D,Table(T[0])) #! FAIL
+data = [
+        Otolith('sdf','sdfs','sdfsd','sdfs',3454,65,88),
+        Otolith('fgh','fgh','fgh','gh',566,45,645),
+        Otolith('a','b','c','d',5996,34,86)
+    ]
 
-update(D,Table(T[0]),Field('rowid')) #! TODO
+insert(D,T[0]) #* success
 
-delete(ds,table) #! TODO
+update(D,T[0],Field('rowid')) #* success
 
-commit(ds,table) #^ NOT TESTED
+delete(D,T[0],4) #* success
+
+commit(D) #^ NOT TESTED
 
 # menu0() #optional, choose table
 #! TODO
