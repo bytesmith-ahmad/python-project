@@ -49,7 +49,7 @@ class DataStore():
         rows = self.connection.execute(
             f"SELECT name FROM pragma_table_info({str(T)})"
         ).fetchall()
-        return [T.field(v) for row in rows for v in row]
+        return [Field(v,table=T) for row in rows for v in row]#[T.field(v) for row in rows for v in row]
 
     def execute(self,sql: Query, rowid = True) -> "Report":
         try:
