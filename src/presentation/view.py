@@ -1,25 +1,17 @@
+import os
+from logging import info, exception
+
 class View:
-    """
-    Console view for interacting with FishService.
-    """
-
-    MENU_TEXT = """
-    - SELECT <id> | * (displays table)
-    - INSERT          (inserts dummy record)
-    - UPDATE <id>     (launches update wizard)
-    - DELETE <id>
-    - exit            (terminates program)
-    """
-
-    @classmethod
-    def start(cls):
+    
+    @staticmethod
+    def start():
         """
         Begin the console loop for user interaction.
         """
         try:
             exit = False
             while not exit:
-                # os.system('cls')
+                os.system('cls')
                 user_input = input("\nEnter your command (type 'help' for available commands)\n\n> ")
                 info(f"User entered \"{user_input}\"")
                 
@@ -28,6 +20,55 @@ class View:
                     exit = cls.execute_action(processed_input)
         except:
             exception("What happened?")
+            
+    def menu0(db:DataStore):
+        tables = db.get_tables()
+        chosen = nav_menu(
+                tables + ['\033[0m'],
+                caption_indices=[len(tables)],
+                deselected_prefix="\033[0m   ",
+                selected_prefix=" \033[92m>\033[7m\033[0m \033[7m", # 92 = green, 7 = reverse
+                selected_index=0
+            )
+        return tables[chosen]
+
+    def menu1(db:DataStore):
+        ops = list(operation)
+        chosen = nav_menu(
+                ops + ['\033[0m'],
+                caption_indices=[len(ops)],
+                deselected_prefix="\033[0m   ",
+                selected_prefix=" \033[92m>\033[7m\033[0m \033[7m", # 92 = green, 7 = reverse
+                selected_index=0
+            )
+        return ops[chosen]
+
+    def menu2(D,focus: Table,op):
+        match op:
+            case operation.SELECT:
+                data = gather_data(op,focus)
+                report = select(D,focus,data['columns'])
+            case operation.INSERT:
+                data = gather_data(op)
+                report = insert(D,focus,data['values'])
+            case operation.UPDATE:
+                data = gather_data(op)
+                report = update(D,focus,data['target'],data['value'],Field('rowid'),data['id'])
+            case operation.DELETE:
+                data = gather_data(op)
+                report = delete(D,focus,data['id'])
+        return report
+
+    def menu3(db,table):
+        return yes_or_no("Commit?")
+
+    #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    
+    
+    
+    
+    
+    
     
     @classmethod
     def process(cls, raw_input):

@@ -2,7 +2,7 @@ from enum import Enum
 from pathlib import PureWindowsPath as Path
 from configparser import ConfigParser
 from os import system
-from utils import my_logger
+from utils import my_logger, signature
 from cutie import select as nav_menu, prompt_yes_or_no as yes_or_no
 from tabulate import tabulate
 from persistence.datastore import DataStore
@@ -17,6 +17,9 @@ class operation(Enum):
     INSERT = 1
     UPDATE = 2
     DELETE = 3
+    COMMIT = 4
+    
+    def __str__(self): return self.name  # Returns only the name without the prefix
 
 # setup
 parser = ConfigParser()
@@ -86,13 +89,13 @@ def menu2(D,focus: Table,op):
             report = select(D,focus,data['columns'])
         case operation.INSERT:
             data = gather_data(op)
-            insert(D,focus,data['values'])
+            report = insert(D,focus,data['values'])
         case operation.UPDATE:
             data = gather_data(op)
-            update(D,focus,data['target'],data['value'],Field('rowid'),data['id'])
+            report = update(D,focus,data['target'],data['value'],Field('rowid'),data['id'])
         case operation.DELETE:
             data = gather_data(op)
-            delete(D,focus,data['id'])
+            report = delete(D,focus,data['id'])
     return report
 
 def menu3(db,table):
@@ -111,11 +114,11 @@ def to_table(data:list[object], headers='firstrow'):
             tablefmt='rounded_outline'
         )
 
-def gather_data(op:operation, table: Table = None):
+def gather_data(op:operation, table: Table = None) -> dict:
     data = {}
     match op:
         case operation.SELECT:
-            x = table.fields() 
+            x = table.fields()
             chosen = nav_menu(
                 table.fields() + ['\033[0m'],
                 caption_indices=[len(op)],
@@ -130,10 +133,20 @@ def gather_data(op:operation, table: Table = None):
             data = gather_data(op)
             update(D,chosen_table,data['target'],data['value'],Field('rowid'),data['id'])
         case operation.DELETE:
-            data = gather_data(op)
-            delete(D,chosen_table,data['id'])
-    return report
+            data["id"] = input("Which row id: ")
+    return data
 
+# Define a function to split a list into chunks of size n
+def chunks(lst, n):
+    for i in range(0, len(lst), n):
+        yield lst[i:i + n]
+    
+def display(data: list[object]):
+    # Iterate over the chunks of 10 rows and print them with a signature between each group
+    for group in chunks(data, 10):
+        print(to_table(group,headers=data[0].as_keys()))
+        signature.sign()
+        
 # TODO Begin tests
 
 system('cls')
@@ -152,19 +165,20 @@ data = [
 insert(D,T[0],data) #* success
 update(D,T[0],Field('number'),99999,Field('rowid'),5) #* success
 delete(D,T[0],4)    #* successs
-commit(D)           #* success
+# commit(D)           #* success
 
 chosen_table = menu0(D) #* success
-fields = D.get_fields(chosen_table)
+chosen_table.columns = D.get_fields(chosen_table)
 report = select(D,chosen_table)
 otoliths = map_to_otolith(report.rows)
-print(to_table(otoliths,headers=otoliths[0].as_keys()))
+headers = otoliths[0].as_keys()
+display(otoliths)
+
 op = menu1(D) #* success
-#! TABLES MUST REFERENCE DB. FIELDS MUST REFERENCE TABLES.
-params = menu2(D, chosen_table, op) #todo
-affirmative = menu3(D,chosen_table) #todo
+report = menu2(D, chosen_table, op) #* success
+affirmative = menu3(D,chosen_table) #* success
 if affirmative:
     D.commit()
     print("Committed")
-    D.execute(f"SELECT * FROM {chosen_table}")
-    
+    report = D.execute(f"SELECT * FROM {chosen_table}")
+    display(map_to_otolith(report.rows))
