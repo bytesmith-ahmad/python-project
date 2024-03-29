@@ -15,49 +15,65 @@ class Controller:
         return cls.db.get_tables()
     
     @classmethod
-    def process(cls,op,table,data):
+    def process(cls,op,table=None,data=None):
         match op.value:
             case 0:
                 return cls.select(table,data)
             case 1:
                 return cls.insert(table,data)
             case 2:
-                pass
+                return cls.update(table,data)
             case 3:
-                pass
+                return cls.delete(table,data)
             case 4:
-                pass
-            case 5:
-                pass
+                return cls.db.commit()
+            
+    @classmethod
+    def execute_script(cls, script):
+        return cls.db.execute_script("\n".join(script))
     
     @classmethod
     def select(cls,table: Table,columns = '*',rowid=True):
         report = cls.db.execute(
-            table.select('rowid', *columns) # * is for unpacking
+            table.select(*columns)
         )
         if report.has_error():
             return ["ERROR"]
         else:
             return cls.map_to_otolith(report.rows)
         
-    def insert(cls, table: Table, values: list[object]):    
-        return cls.db.execute(
-            table.insert(*[o.as_values() for o in values])
+    @classmethod
+    def insert(cls, table: Table, values: list[object]):
+        report = cls.db.execute(
+            table.insert(*values)
         )
+        if report.has_error():
+            return ["ERROR"]
+        else:
+            return cls.map_to_otolith(report.rows)
 
-    def update(cls, table: Table,target: Field, value,
-            identifying_column: Field, identifying_value):
-        return cls.db.execute(
+    @classmethod
+    def update(cls, table, data):
+        report = cls.db.execute(
             table.update()
-            .set(target, value)
-            .where(identifying_column == identifying_value)
+            .set(data['target'], data['value'])
+            .where(Field('rowid') == data['id'])
         )
+        if report.has_error():
+            return ["ERROR"]
+        else:
+            return cls.map_to_otolith(report.rows)
 
+    @classmethod
     def delete(cls, table: Table, rowid: int):
         """Query.from_(table).delete().where(table.id == id)"""
-        return cls.db.execute(
+        report = cls.db.execute(
             Query().from_(table).delete().where(Field('rowid') == rowid)
         )
+        if report.has_error():
+            return ["ERROR"]
+        else:
+            return cls.map_to_otolith(report.rows)
             
     @classmethod
     def map_to_otolith(cls,rows):

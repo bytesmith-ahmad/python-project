@@ -1,20 +1,29 @@
 from enum import Enum
 import os
 from logging import info, exception
+import sys
 from business.controller import Controller
 from cutie import select as nav_menu, select_multiple
 from pypika import Table
+from utils.src.signature import sign
+from tabulate import tabulate
 
 class View:
-    
+
     class operations(Enum):
         SELECT = 0
         INSERT = 1
         UPDATE = 2
         DELETE = 3
         COMMIT = 4
+        RUN_SCRIPT = 5
+        EXIT = 6
     
         def __str__(self): return self.name  # Returns only the name without the prefix
+
+    selected_op = None
+    selected_table = None
+    selected_columns: list = None
     
     @staticmethod
     def start(path_to_db):
@@ -24,17 +33,32 @@ class View:
         try:
             os.system('cls')
             Controller.establish_connection(path_to_db)
-            table = View.choose()
+            View.selected_table = View.choose()
             exit = False
             while not exit:
-                # list_ = Controller.select(table)
-                # View.display(list_)
-                op = View.choose_operation()
-                data = View.collect_data(op=op,table=table)
-                otoliths = Controller.process(op=op,table=table,data=data)
-                View.display(otoliths)
+                View.selected_op = View.choose_operation()
+                if View.selected_op == View.operations.EXIT:
+                    exit = True
+                elif View.selected_op == View.operations.COMMIT:
+                    os.system('cls')
+                    s = Controller.process(View.selected_op)
+                    print(s)
+                elif View.selected_op == View.operations.RUN_SCRIPT:
+                    os.system('cls')
+                    print("PASTE THE SQL SCRIPT HERE:")
+                    print("To end recording, do Ctrl+Z on Windows, Ctrl+D on Linux")
+                    print("*************************")
+                    script = sys.stdin.readlines()
+                    Controller.execute_script(script)
+                else: # SELECT and DML here
+                    data = View.collect_data(op=View.selected_op,table=View.selected_table)
+                    otoliths = Controller.process(op=View.selected_op,table=View.selected_table,data=data)
+                    View.display(otoliths)
         except Exception as e:
             exception("What happened?")
+
+    def print_table(list_: list):
+        View.display(list_)
     
     def choose():
         tables = Controller.get_tables()
@@ -58,18 +82,21 @@ class View:
             )
         return ops[chosen]
 
-    def collect_data(table: Table,op: operations) -> dict:
+    def collect_data(table: Table,op: operations):
         match op:
             case View.operations.SELECT:
                 """Pick columns"""
                 columns = table.columns
+                print("USE ARROWS ^v TO SELECT COLUMNS THEN ENTER TO CONFIRM:\n")
                 ints = select_multiple(
                     options=columns,
                     ticked_indices=list(range(len(columns))),
                     minimal_count=1,
+                    cursor_index=len(columns),
                     hide_confirm=False
                 )
                 data = [columns[i] for i in ints]
+                View.selected_columns = data
             case View.operations.INSERT:
                 """Input for each field"""
                 data = []
@@ -77,99 +104,52 @@ class View:
                     data += [input(str(field) + ": ")]
             case View.operations.UPDATE:
                 """Need a target, value, and id"""
-                data['target'] = nav_menu(
+                data = {}
+                data['id'] = input("Which row? (id): ")
+                print("Which column needs update? : ")
+                target_index = nav_menu(
                     table.columns + ['\033[0m'],
                     caption_indices=[len(table.columns)],
                     deselected_prefix="\033[0m   ",
                     selected_prefix=" \033[92m>\033[7m\033[0m \033[7m", # 92 = green, 7 = reverse
                     selected_index=0
                 )
-                data['value'] = input("Value: ")
-                data['id'] = input("Id: ")
+                data['target'] = table.columns[target_index]
+                data['value'] = input("New value: ")
                 return data
             case View.operations.DELETE:
                 """Need only id"""
-                data = input("Id: ")
+                data = input("Input ROWID to delete: ")
+            case View.operations.COMMIT:
+                data = None
         return data
+    
+    # Define a function to split a list into chunks of size n
+    def chunks(lst, n):
+        for i in range(0, len(lst), n):
+            yield lst[i:i + n]
+        
+    def display(data: list[object]):
+        # Iterate over the chunks of 10 rows and print them with a signature between each group
+        headers = data[0].as_keys()
+        for group in View.chunks(data, 10):
+            print(View.to_table(group,headers=headers))
+            sign()
 
-    # def menu3(db,table):
-    #     return yes_or_no("Commit?")
-    
-    def display(list_: list):
-        pass #!TODO TABULATE LIST AND STORE STATE
-
-    #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-    
-    
-    
-    
-    
-    
-    
-    @classmethod
-    def process(cls, raw_input):
-        """
-        Take raw input, refine it, and extract action and id where id could be null.
-        """
-        action_set = {
-            "action": None,
-            "arg": None
-        }
-        try:
-            refined_input = raw_input.strip().lower().split()
-            action_set["action"] = refined_input[0]
-            action_set["arg"] = refined_input[1]
-        except IndexError:
-            if action_set["action"] is None:
-                error("\033[31mERROR: CANNOT BE EMPTY, SEEK HELP\033[0m")
-            else:
-                pass
-        except:
-            exception("ERROR: SEEK HELP")  # Send exception info to both file AND console
-        finally:
-            return action_set
-    
-    @classmethod
-    def execute_action(cls, action_set):
-        """
-        Execute the action based on user input.
-        """
-        exit = False
-        try:
-            action = action_set.get("action")
-            match action:
-                case "exit":
-                    exit = True
-                case "help":
-                    print(cls.MENU_TEXT)
-                case "update":
-                    cls.prompt_update() 
-                case _:
-                    info(f"Executing action {action.upper()}...\n")
-                    display_info = FishService.execute_action(action_set)  # The only connection to FishService
-                    cls.execute(display_info)  # Either PrettyTable or string, both printable
-        except ValueError:
-            pass
-        except Exception as e:
-            exception("ERROR IN FishConsoleView.execute_action")
-        finally:
-            return exit
-
-    @classmethod
-    def prompt_update(cls):
-        """
-        Prompt the user for input to update data.
-        """
-        try:
-            index = input("Enter the ID to update: ")
-            column = input("Enter the column to update: ")
-            new_value = input("Enter the new value: ")
-
-            action_set = {"action": "update", "arg": index, "column": column, "new_value": new_value}
-            display_info = FishService.execute_action(action_set)
-            cls.execute(display_info)
-        except Exception as e:
-            exception("ERROR IN prompt_update")
+    def to_table(data:list[object], headers='firstrow'):
+        matrix = []
+        for obj in data:
+            row = []
+            for val in obj.as_values():
+                row += [val]
+            matrix += [row]
+        T = tabulate(
+                headers=headers,
+                tabular_data=matrix,
+                tablefmt='rounded_outline'
+            )
+        View.selected = T
+        return T
 
     @classmethod
     def __str__(cls):

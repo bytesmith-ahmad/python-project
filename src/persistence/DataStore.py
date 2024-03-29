@@ -32,11 +32,16 @@ class DataStore():
         except Exception as e:
             exception(f"Failed connection: {e}")
             
-    def close(self) -> None:
+    def close(self) -> str:
         self.connection.close()
+        return "Closed"
         
-    def commit(self) -> None:
-        self.connection.commit()
+    def commit(self) -> str:
+        try:
+            self.connection.commit()
+            return "Changes saved"
+        except sqlite3.Error as e:
+            return "ERROR: CHANGES NOT SAVED"
         
     def get_tables(self) -> list[str]:
         rows = self.connection.execute(
@@ -58,7 +63,7 @@ class DataStore():
         try:
             con = self.connection
             rep = self.Report(sql=sql)
-            sql = str(sql).replace("*","rowid AS id, *") if rowid else str(sql)
+            sql = str(sql).replace('SELECT','SELECT rowid AS id,') if rowid else str(sql)
             rows = con.execute(sql).fetchall()
             if rows == []:
                 table = self.get_table_name(rep.sql)
@@ -70,6 +75,15 @@ class DataStore():
             rep.error = ex
         finally:
             return rep
+        
+    def execute_script(self,script) -> str:
+        try:
+            self.connection.executescript(script)
+            return "Script executed without errors"
+        except sqlite3.Error as err:
+            return "Script executed with SQL error"
+        except Exception as ex:
+            return "Script executed but error"
 
     def reveal(self,rows) -> list[dict[str]]:
         revealed_rows = []
