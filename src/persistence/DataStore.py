@@ -2,7 +2,7 @@
 
 import sqlite3
 from pypika import Query, Table, Field
-from utils.my_logger import info, exception
+from logging import info, exception
 from pathlib import PureWindowsPath as Path
 
 class DataStore():
@@ -43,13 +43,16 @@ class DataStore():
             """SELECT name FROM sqlite_master WHERE
             type = 'table' AND name NOT LIKE 'sqlite%';"""
         ).fetchall()
-        return [Table(v) for row in rows for v in row]
+        tables = [Table(v) for row in rows for v in row]
+        for t in tables:
+            t.columns = self.get_fields(t)
+        return tables
     
     def get_fields(self,T:Table) -> list[str]:
         rows = self.connection.execute(
             f"SELECT name FROM pragma_table_info({str(T)})"
         ).fetchall()
-        return [Field(v,table=T) for row in rows for v in row]#[T.field(v) for row in rows for v in row]
+        return [Field(v,table=T) for row in rows for v in row]
 
     def execute(self,sql: Query, rowid = True) -> "Report":
         try:
@@ -138,7 +141,6 @@ class DataStore():
             self.rows = rows
 
         def has_error(self):
-            """Check if """
             return True if self.error else False
 
         def get_values(self) -> list[list]:

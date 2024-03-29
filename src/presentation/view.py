@@ -1,28 +1,43 @@
+from enum import Enum
 import os
 from logging import info, exception
+from business.controller import Controller
+from cutie import select as nav_menu, select_multiple
+from pypika import Table
 
 class View:
     
+    class operations(Enum):
+        SELECT = 0
+        INSERT = 1
+        UPDATE = 2
+        DELETE = 3
+        COMMIT = 4
+    
+        def __str__(self): return self.name  # Returns only the name without the prefix
+    
     @staticmethod
-    def start():
+    def start(path_to_db):
         """
         Begin the console loop for user interaction.
         """
         try:
+            os.system('cls')
+            Controller.establish_connection(path_to_db)
+            table = View.choose()
             exit = False
             while not exit:
-                os.system('cls')
-                user_input = input("\nEnter your command (type 'help' for available commands)\n\n> ")
-                info(f"User entered \"{user_input}\"")
-                
-                processed_input = cls.process(user_input)
-                if processed_input.get("action") is not None:
-                    exit = cls.execute_action(processed_input)
-        except:
+                # list_ = Controller.select(table)
+                # View.display(list_)
+                op = View.choose_operation()
+                data = View.collect_data(op=op,table=table)
+                otoliths = Controller.process(op=op,table=table,data=data)
+                View.display(otoliths)
+        except Exception as e:
             exception("What happened?")
-            
-    def menu0(db:DataStore):
-        tables = db.get_tables()
+    
+    def choose():
+        tables = Controller.get_tables()
         chosen = nav_menu(
                 tables + ['\033[0m'],
                 caption_indices=[len(tables)],
@@ -32,8 +47,8 @@ class View:
             )
         return tables[chosen]
 
-    def menu1(db:DataStore):
-        ops = list(operation)
+    def choose_operation():
+        ops = list(View.operations)
         chosen = nav_menu(
                 ops + ['\033[0m'],
                 caption_indices=[len(ops)],
@@ -43,24 +58,45 @@ class View:
             )
         return ops[chosen]
 
-    def menu2(D,focus: Table,op):
+    def collect_data(table: Table,op: operations) -> dict:
         match op:
-            case operation.SELECT:
-                data = gather_data(op,focus)
-                report = select(D,focus,data['columns'])
-            case operation.INSERT:
-                data = gather_data(op)
-                report = insert(D,focus,data['values'])
-            case operation.UPDATE:
-                data = gather_data(op)
-                report = update(D,focus,data['target'],data['value'],Field('rowid'),data['id'])
-            case operation.DELETE:
-                data = gather_data(op)
-                report = delete(D,focus,data['id'])
-        return report
+            case View.operations.SELECT:
+                """Pick columns"""
+                columns = table.columns
+                ints = select_multiple(
+                    options=columns,
+                    ticked_indices=list(range(len(columns))),
+                    minimal_count=1,
+                    hide_confirm=False
+                )
+                data = [columns[i] for i in ints]
+            case View.operations.INSERT:
+                """Input for each field"""
+                data = []
+                for field in table.columns:
+                    data += [input(str(field) + ": ")]
+            case View.operations.UPDATE:
+                """Need a target, value, and id"""
+                data['target'] = nav_menu(
+                    table.columns + ['\033[0m'],
+                    caption_indices=[len(table.columns)],
+                    deselected_prefix="\033[0m   ",
+                    selected_prefix=" \033[92m>\033[7m\033[0m \033[7m", # 92 = green, 7 = reverse
+                    selected_index=0
+                )
+                data['value'] = input("Value: ")
+                data['id'] = input("Id: ")
+                return data
+            case View.operations.DELETE:
+                """Need only id"""
+                data = input("Id: ")
+        return data
 
-    def menu3(db,table):
-        return yes_or_no("Commit?")
+    # def menu3(db,table):
+    #     return yes_or_no("Commit?")
+    
+    def display(list_: list):
+        pass #!TODO TABULATE LIST AND STORE STATE
 
     #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
     
@@ -118,23 +154,6 @@ class View:
             exception("ERROR IN FishConsoleView.execute_action")
         finally:
             return exit
-    
-    @classmethod
-    def execute(cls, display_info: DisplayInfo):
-        """
-        Execute based on the display information.
-        """
-        if display_info.is_table:
-            pt = display_info.pretty_table
-            row_count = display_info.row_count
-            i = 0
-            while True:
-                print(pt.get_string(start=i, end=i + 10))
-                sign()
-                if i > row_count - 10:
-                    break
-                else:
-                    i += 10
 
     @classmethod
     def prompt_update(cls):

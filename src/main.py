@@ -2,16 +2,21 @@
 
 from pathlib import Path
 from logging import info
+from utils.src.config import read_ini
+from utils.src.signature import sign
 from presentation.view import View
-from utils.signature import sign
+from business.controller import Controller
 
 def main():
     # get current path
     src = Path(__file__).parent
     info(f"Operating from: {src}")
+    
+    # load configs
+    _ini = read_ini(src/'config.ini')
 
     # call consoleview
-    View.start() # loop
+    View.start(src/_ini['Datasources']['database']) # loop
     info("Program closed")
 
     # signature
