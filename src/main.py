@@ -1,20 +1,27 @@
 # Code by Ahmad Al-Jabbouri
 
-#todo This package requires to be at the top level lest all imports will fail!
-
-from os import getcwd
+from pathlib import Path
 from logging import info
-from modules.my_module import *
-from presentation.FishConsoleView import *
+from utils.src.config import read_ini
+from utils.src.signature import sign
+from presentation.view import View
+from business.controller import Controller
 
-# get current path
-current_path = getcwd()
-info(f"Operating from: {current_path}")
+def main():
+    # get current path
+    src = Path(__file__).parent
+    info(f"Operating from: {src}")
+    
+    # load configs
+    _ini = read_ini(src/'config.ini')
 
-# call consoleview
-FishConsoleView.start() # loop
-info("Program closed")
+    # call consoleview
+    View.start(src/_ini['Datasources']['database']) # loop
+    info("Program closed")
 
-# signature
-sign()
-print(f"\033[2mSee logs at: {current_path}\\.log\033[0m\n")
+    # signature
+    sign()
+    print(f"\033[2mSee logs at: {src/".log"}\033[0m\n")
+
+if __name__ == "__main__":
+    main()
