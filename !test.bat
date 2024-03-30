@@ -1,1 +1,0 @@
-python ./src/test.py
