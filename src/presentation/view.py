@@ -132,6 +132,7 @@ class View:
     def display(data: list[object]):
         # Iterate over the chunks of 10 rows and print them with a signature between each group
         headers = data[0].as_keys()
+        os.system('cls')
         for group in View.chunks(data, 10):
             print(View.to_table(group,headers=headers))
             sign()
