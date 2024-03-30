@@ -13,18 +13,22 @@ class DataStore():
     persistence = Path(__file__).parent
 
     def __init__(self, db_path: Path = None):
+        """
+        Initializes the DataStore class.
+        """
         self.connection: sqlite3.Connection = None
         if db_path:
             self.connect(db_path)
 
     def connect(self,db_path: Path) -> None:
-        """Connects to database and configures connection"""
-        
+        """
+        Connects to the specified database.
+        """
         info(f"Connecting to {db_path}...")
         try:
             self.connection = sqlite3.connect(
                 database=db_path,
-                detect_types=sqlite3.PARSE_DECLTYPES  # To use in conjuction to converters and adapters
+                detect_types=sqlite3.PARSE_DECLTYPES  # To use in conjunction with converters and adapters
             )
             self.connection.row_factory = sqlite3.Row # .execute() will now return Rows instead of tuples. Rows work similar to dict
             for value in self.connection.execute("SELECT sqlite_version()").fetchone():
@@ -33,10 +37,16 @@ class DataStore():
             exception(f"Failed connection: {e}")
             
     def close(self) -> str:
+        """
+        Closes the database connection.
+        """
         self.connection.close()
         return "Closed"
         
     def commit(self) -> str:
+        """
+        Commits changes to the database.
+        """
         try:
             self.connection.commit()
             return "Changes saved"
@@ -44,6 +54,9 @@ class DataStore():
             return "ERROR: CHANGES NOT SAVED"
         
     def get_tables(self) -> list[str]:
+        """
+        Retrieves all tables from the database.
+        """
         rows = self.connection.execute(
             """SELECT name FROM sqlite_master WHERE
             type = 'table' AND name NOT LIKE 'sqlite%';"""
@@ -54,12 +67,18 @@ class DataStore():
         return tables
     
     def get_fields(self,T:Table) -> list[str]:
+        """
+        Retrieves all fields from the specified table.
+        """
         rows = self.connection.execute(
             f"SELECT name FROM pragma_table_info({str(T)})"
         ).fetchall()
         return [Field(v,table=T) for row in rows for v in row]
 
     def execute(self,sql: Query, rowid = True) -> "Report":
+        """
+        Executes the specified SQL query.
+        """
         try:
             con = self.connection
             rep = self.Report(sql=sql)
@@ -77,6 +96,9 @@ class DataStore():
             return rep
         
     def execute_script(self,script) -> str:
+        """
+        Executes the specified SQL script.
+        """
         try:
             self.connection.executescript(script)
             return "Script executed without errors"
@@ -86,6 +108,9 @@ class DataStore():
             return "Script executed but error"
 
     def reveal(self,rows) -> list[dict[str]]:
+        """
+        Reveals the rows by converting them into dictionaries.
+        """
         revealed_rows = []
         column_names = [column for column in rows[0].keys()]
         for row in rows:
@@ -97,7 +122,9 @@ class DataStore():
 
     @staticmethod
     def get_table_name(sql:Query) -> str:
-        """Extracts table name from query, doesn't not work for all queries"""
+        """
+        Extracts the table name from the SQL query.
+        """
         if bool(sql._from):
             """SELECT or DELETE""" # for future use
             t = sql._from[0].get_table_name()
@@ -114,13 +141,17 @@ class DataStore():
 
     @staticmethod
     def toCSV(data,fname="output.csv"):
-        
+        """
+        Converts the data into a CSV file.
+        """
         with open(fname,'a') as file:
             file.write(",".join([str(j) for i in data for j in i]))
 
     @staticmethod
     def summary(rows):
-            
+        """
+        Generates a summary of the rows.
+        """
         # split the rows into columns
         cols = [ [r[c] for r in rows] for c in range(len(rows[0])) ]
         
@@ -155,15 +186,24 @@ class DataStore():
             self.rows = rows
 
         def has_error(self):
+            """
+            Checks if there is an error.
+            """
             return True if self.error else False
 
         def get_values(self) -> list[list]:
+            """
+            Retrieves the values.
+            """
             l = []
             for row in self.rows:
                 l += [[val for val in row]]
             return l
 
         def get_columns(self):
+            """
+            Retrieves the columns.
+            """
             return self.rows[0].keys() # get keys from first row in list
 
 if __name__ == "__main__":

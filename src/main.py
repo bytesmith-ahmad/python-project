@@ -8,6 +8,9 @@ from presentation.view import View
 from business.controller import Controller
 
 def main():
+    """
+    Main function to start the program.
+    """
     # get current path
     src = Path(__file__).parent
     info(f"Operating from: {src}")
@@ -21,7 +24,6 @@ def main():
 
     # signature
     sign()
-    print(f"\033[2mSee logs at: {src/".log"}\033[0m\n")
 
 if __name__ == "__main__":
     main()

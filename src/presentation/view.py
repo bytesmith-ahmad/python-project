@@ -1,7 +1,7 @@
 from enum import Enum
 import os
-from logging import info, exception
 import sys
+from logging import info, exception
 from business.controller import Controller
 from cutie import select as nav_menu, select_multiple
 from pypika import Table
@@ -9,8 +9,14 @@ from utils.src.signature import sign
 from tabulate import tabulate
 
 class View:
+    """
+    Class representing the user interface view for interacting with the application.
+    """
 
     class operations(Enum):
+        """
+        Enum class defining different operations available in the view.
+        """
         SELECT = 0
         INSERT = 1
         UPDATE = 2
@@ -19,7 +25,11 @@ class View:
         RUN_SCRIPT = 5
         EXIT = 6
     
-        def __str__(self): return self.name  # Returns only the name without the prefix
+        def __str__(self):
+            """
+            Returns only the name without the prefix.
+            """
+            return self.name
 
     selected_op = None
     selected_table = None
@@ -58,9 +68,15 @@ class View:
             exception("What happened?")
 
     def print_table(list_: list):
+        """
+        Print the given list in a tabular format.
+        """
         View.display(list_)
     
     def choose():
+        """
+        Choose a table from the available tables.
+        """
         tables = Controller.get_tables()
         chosen = nav_menu(
                 tables + ['\033[0m'],
@@ -72,6 +88,9 @@ class View:
         return tables[chosen]
 
     def choose_operation():
+        """
+        Choose an operation from the available operations.
+        """
         ops = list(View.operations)
         chosen = nav_menu(
                 ops + ['\033[0m'],
@@ -83,6 +102,9 @@ class View:
         return ops[chosen]
 
     def collect_data(table: Table,op: operations):
+        """
+        Collect data based on the selected operation.
+        """
         match op:
             case View.operations.SELECT:
                 """Pick columns"""
@@ -124,13 +146,17 @@ class View:
                 data = None
         return data
     
-    # Define a function to split a list into chunks of size n
     def chunks(lst, n):
+        """
+        Split a list into chunks of size n.
+        """
         for i in range(0, len(lst), n):
             yield lst[i:i + n]
         
     def display(data: list[object]):
-        # Iterate over the chunks of 10 rows and print them with a signature between each group
+        """
+        Display the data in a tabular format.
+        """
         headers = data[0].as_keys()
         os.system('cls')
         for group in View.chunks(data, 10):
@@ -138,6 +164,9 @@ class View:
             sign()
 
     def to_table(data:list[object], headers='firstrow'):
+        """
+        Convert the data into a tabular format.
+        """
         matrix = []
         for obj in data:
             row = []

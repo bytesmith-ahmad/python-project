@@ -3,19 +3,31 @@ from persistence.datastore import DataStore
 from pypika import Query, Table, Field
 
 class Controller:
+    """
+    Class responsible for controlling interactions between the view and the data.
+    """
     
     db: DataStore = None
     
     @classmethod
     def establish_connection(cls, path_to_db) -> None:
+        """
+        Establishes a connection to the database.
+        """
         cls.db = DataStore(path_to_db)
         
     @classmethod
     def get_tables(cls):
+        """
+        Retrieves all tables from the database.
+        """
         return cls.db.get_tables()
     
     @classmethod
     def process(cls,op,table=None,data=None):
+        """
+        Processes the operation based on the given parameters.
+        """
         match op.value:
             case 0:
                 return cls.select(table,data)
@@ -30,10 +42,16 @@ class Controller:
             
     @classmethod
     def execute_script(cls, script):
+        """
+        Executes the given script in the database.
+        """
         return cls.db.execute_script("\n".join(script))
     
     @classmethod
     def select(cls,table: Table,columns = '*',rowid=True):
+        """
+        Performs a select operation on the database.
+        """
         report = cls.db.execute(
             table.select(*columns)
         )
@@ -44,6 +62,9 @@ class Controller:
         
     @classmethod
     def insert(cls, table: Table, values: list[object]):
+        """
+        Performs an insert operation on the database.
+        """
         report = cls.db.execute(
             table.insert(*values)
         )
@@ -54,6 +75,9 @@ class Controller:
 
     @classmethod
     def update(cls, table, data):
+        """
+        Performs an update operation on the database.
+        """
         report = cls.db.execute(
             table.update()
             .set(data['target'], data['value'])
@@ -66,7 +90,9 @@ class Controller:
 
     @classmethod
     def delete(cls, table: Table, rowid: int):
-        """Query.from_(table).delete().where(table.id == id)"""
+        """
+        Performs a delete operation on the database.
+        """
         report = cls.db.execute(
             Query().from_(table).delete().where(Field('rowid') == rowid)
         )
@@ -77,4 +103,7 @@ class Controller:
             
     @classmethod
     def map_to_otolith(cls,rows):
+        """
+        Maps rows to Otolith objects.
+        """
         return [Otolith(**row) for row in rows]
