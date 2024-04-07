@@ -2,5 +2,5 @@
 	path = src/utils
 	url = https://github.com/bytesmith-ahmad/my-python-utils
 [submodule "src/my-python-utils"]
-	path = src/utils
+	path = src/utils/my-python-utils
 	url = https://github.com/bytesmith-ahmad/my-python-utils
