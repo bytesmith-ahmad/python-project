@@ -1,6 +1,6 @@
+import os, sys, msvcrt, time
+from ctypes import windll, Structure, c_long, byref
 from enum import Enum
-import os
-import sys
 from logging import info, exception
 from business.controller import Controller
 from cutie import select as nav_menu, select_multiple
@@ -22,6 +22,8 @@ class View:
         UPDATE = 2
         DELETE = 3
         COMMIT = 4
+        FILTER = 7
+        SORT = 8
         RUN_SCRIPT = 5
         EXIT = 6
     
@@ -34,39 +36,55 @@ class View:
     selected_op = None
     selected_table = None
     selected_columns: list = None
+    cache: list[object] = []
+    display_settings: dict = "default"
     
-    @staticmethod
-    def start(path_to_db):
+    @classmethod
+    def start(c, path_to_db):
         """
         Begin the console loop for user interaction.
         """
         try:
-            os.system('cls')
-            Controller.establish_connection(path_to_db)
-            View.selected_table = View.choose()
-            exit = False
-            while not exit:
-                View.selected_op = View.choose_operation()
-                if View.selected_op == View.operations.EXIT:
-                    exit = True
-                elif View.selected_op == View.operations.COMMIT:
-                    os.system('cls')
-                    s = Controller.process(View.selected_op)
-                    print(s)
-                elif View.selected_op == View.operations.RUN_SCRIPT:
-                    os.system('cls')
-                    print("PASTE THE SQL SCRIPT HERE:")
-                    print("To end recording, do Ctrl+Z on Windows, Ctrl+D on Linux")
-                    print("*************************")
-                    script = sys.stdin.readlines()
-                    Controller.execute_script(script)
-                else: # SELECT and DML here
-                    data = View.collect_data(op=View.selected_op,table=View.selected_table)
-                    otoliths = Controller.process(op=View.selected_op,table=View.selected_table,data=data)
-                    View.display(otoliths)
+            exit_0 = False
+            while not exit_0:
+                Controller.establish_connection(path_to_db)
+                c.selected_table = c.choose()
+                if c.selected_table == 'EXIT':
+                    exit_0 = True
+                    exit_1 = True
+                else:
+                    exit_0 = False
+                    exit_1 = False
+                    c.cache = c.get_table_data(c.selected_table,View.operations.SELECT)
+                while not exit_1:
+                    View.display(c.cache)
+                    c.selected_op = c.choose_operation()
+                    if c.selected_op == c.operations.EXIT:
+                        exit_1 = True
+                    elif c.selected_op == c.operations.COMMIT:
+                        os.system('cls')
+                        s = Controller.process(c.selected_op)
+                        print(s)
+                    elif c.selected_op == c.operations.RUN_SCRIPT:
+                        os.system('cls')
+                        print("PASTE THE SQL SCRIPT HERE:")
+                        print("To end recording, do Ctrl+Z on Windows, Ctrl+D on Linux")
+                        print("*************************")
+                        script = sys.stdin.readlines()
+                        Controller.execute_script(script)
+                    else: # SELECT and DML here
+                        data = c.collect_data(op=c.selected_op,table=c.selected_table)
+                        otoliths = Controller.process(op=c.selected_op,table=c.selected_table,data=data)
+                        c.display(otoliths,c.display_settings)
         except Exception as e:
             exception("What happened?")
 
+    @classmethod
+    def get_table_data(c,table,op): #TODO
+        """"""
+        data = c.collect_data(op=op,table=table)
+        return Controller.process(op=op,table=c.selected_table,data=data)
+    
     def print_table(list_: list):
         """
         Print the given list in a tabular format.
@@ -77,7 +95,8 @@ class View:
         """
         Choose a table from the available tables.
         """
-        tables = Controller.get_tables()
+        tables = Controller.get_tables() + ['EXIT']
+        os.system('cls')
         chosen = nav_menu(
                 tables + ['\033[0m'],
                 caption_indices=[len(tables)],
@@ -91,6 +110,8 @@ class View:
         """
         Choose an operation from the available operations.
         """
+        curs_P = View.queryMousePosition()
+        print("x")
         ops = list(View.operations)
         chosen = nav_menu(
                 ops + ['\033[0m'],
@@ -103,10 +124,10 @@ class View:
 
     def collect_data(table: Table,op: operations):
         """
-        Collect data based on the selected operation.
+        Collect user input to send to controller based on the selected operation.
         """
         match op:
-            case View.operations.SELECT:
+            case View.operations.FILTER:
                 """Pick columns"""
                 columns = table.columns
                 print("USE ARROWS ^v TO SELECT COLUMNS THEN ENTER TO CONFIRM:\n")
@@ -144,6 +165,9 @@ class View:
                 data = input("Input ROWID to delete: ")
             case View.operations.COMMIT:
                 data = None
+            case View.operations.SELECT:
+                """Pick columns"""
+                data = table.columns
         return data
     
     def chunks(lst, n):
@@ -153,7 +177,7 @@ class View:
         for i in range(0, len(lst), n):
             yield lst[i:i + n]
         
-    def display(data: list[object]):
+    def display(data: list[object]): #TODO
         """
         Display the data in a tabular format.
         """
@@ -163,7 +187,7 @@ class View:
             print(View.to_table(group,headers=headers))
             sign()
 
-    def to_table(data:list[object], headers='firstrow'):
+    def to_table(data:list[object], headers='firstrow') -> str:
         """
         Convert the data into a tabular format.
         """
