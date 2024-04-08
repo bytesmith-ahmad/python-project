@@ -38,7 +38,7 @@ class View:
     selected_columns: list = None
     fields: list = []
     unmasked_fields = []
-    cache: list[object] = []
+    cache: str = ''
     display_settings: dict = "default"
     
     @classmethod
@@ -59,7 +59,7 @@ class View:
                     exit_1 = False
                     c.cache = c.get_table_data(c.selected_table,View.operations.SELECT)
                 while not exit_1:
-                    View.display(c.cache)
+                    View.display(c.cache) 
                     c.selected_op = c.choose_operation()
                     if c.selected_op == c.operations.EXIT:
                         exit_1 = True
@@ -76,9 +76,11 @@ class View:
                         Controller.execute_script(script)
                     elif c.selected_op == c.operations.SORT:
                         """End goal is to append order by's to SQL queries"""
-                        print("selected from all columns, then choose ascendign or descending")
+                        # selected from all columns, then choose ascendign or descending
                         ordering_terms = []
                         fields = c.selected_table.columns
+                        os.system('cls')
+                        print(c.cache)
                         print("SORT BY (selection order preserved):")
                         indeces = select_multiple(
                             options=fields,
@@ -100,7 +102,7 @@ class View:
                         unmasked = c.unmasked_fields
                         columns = unmasked if unmasked else '*'
                         rows = Controller.select(c.selected_table,columns,ordering_terms)
-                        #* successfulyl returned rows?
+                        View.display(rows)
                     else: # SELECT and DML here
                         data = c.collect_data(op=c.selected_op,table=c.selected_table)
                         otoliths = Controller.process(op=c.selected_op,table=c.selected_table,data=data)
@@ -127,7 +129,7 @@ class View:
         options =  Controller.get_tables()
         os.system('cls')
         chosen = nav_menu(
-                options + ['\033[0m'],
+                options + ['EXIT', '\033[0m'],
                 caption_indices=[len(options)],
                 deselected_prefix="\033[0m   ",
                 selected_prefix=" \033[92m>\033[7m\033[0m \033[7m", # 92 = green, 7 = reverse
@@ -210,11 +212,17 @@ class View:
         """
         Display the data in a tabular format.
         """
-        headers = data[0].as_keys()
-        os.system('cls')
-        for group in View.chunks(data, 10):
-            print(View.to_table(group,headers=headers))
-            sign()
+        if isinstance(data,str):
+            # print(data)
+            pass
+        else:
+            headers = data[0].as_keys()
+            os.system('cls')
+            View.cache = '' # for quick reprint
+            for group in View.chunks(data, 10):
+                View.cache += View.to_table(group,headers=headers)
+                View.cache += sign()
+            print(View.cache)
 
     def to_table(data:list[object], headers='firstrow') -> str:
         """

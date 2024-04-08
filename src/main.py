@@ -23,7 +23,7 @@ def main():
     info("Program closed")
 
     # signature
-    sign()
+    print(sign())
 
 if __name__ == "__main__":
     main()
