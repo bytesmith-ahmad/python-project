@@ -1,5 +1,5 @@
-import os, sys, msvcrt, time
-from ctypes import windll, Structure, c_long, byref
+import os, sys
+from blessed import Terminal
 from enum import Enum
 from logging import info, exception
 from business.controller import Controller
@@ -36,6 +36,8 @@ class View:
     selected_op = None
     selected_table = None
     selected_columns: list = None
+    fields: list = []
+    unmasked_fields = []
     cache: list[object] = []
     display_settings: dict = "default"
     
@@ -72,6 +74,33 @@ class View:
                         print("*************************")
                         script = sys.stdin.readlines()
                         Controller.execute_script(script)
+                    elif c.selected_op == c.operations.SORT:
+                        """End goal is to append order by's to SQL queries"""
+                        print("selected from all columns, then choose ascendign or descending")
+                        ordering_terms = []
+                        fields = c.selected_table.columns
+                        print("SORT BY (selection order preserved):")
+                        indeces = select_multiple(
+                            options=fields,
+                            minimal_count=1,
+                            cursor_index=0,
+                            hide_confirm=False
+                        )
+                        for index in indeces:
+                            i = nav_menu(
+                                options= [fields[index], 'asc ^', 'desc v\033[0m'],
+                                caption_indices=[0],
+                                deselected_prefix="\033[0m   ",
+                                selected_prefix=" \033[92m>\033[7m\033[0m \033[7m", # 92 = green, 7 = reverse
+                                selected_index=1
+                            )
+                            direction = 'ASC' if i == 1 else 'DESC'
+                            ordering_terms += [(fields[index].name,direction)]
+
+                        unmasked = c.unmasked_fields
+                        columns = unmasked if unmasked else '*'
+                        rows = Controller.select(c.selected_table,columns,ordering_terms)
+                        #* successfulyl returned rows?
                     else: # SELECT and DML here
                         data = c.collect_data(op=c.selected_op,table=c.selected_table)
                         otoliths = Controller.process(op=c.selected_op,table=c.selected_table,data=data)
@@ -95,24 +124,23 @@ class View:
         """
         Choose a table from the available tables.
         """
-        tables = Controller.get_tables() + ['EXIT']
+        options =  Controller.get_tables()
         os.system('cls')
         chosen = nav_menu(
-                tables + ['\033[0m'],
-                caption_indices=[len(tables)],
+                options + ['\033[0m'],
+                caption_indices=[len(options)],
                 deselected_prefix="\033[0m   ",
                 selected_prefix=" \033[92m>\033[7m\033[0m \033[7m", # 92 = green, 7 = reverse
                 selected_index=0
             )
-        return tables[chosen]
+        return options[chosen]
 
     def choose_operation():
         """
         Choose an operation from the available operations.
         """
-        curs_P = View.queryMousePosition()
-        print("x")
         ops = list(View.operations)
+        x,y = View.get_coordinates()
         chosen = nav_menu(
                 ops + ['\033[0m'],
                 caption_indices=[len(ops)],
@@ -120,6 +148,7 @@ class View:
                 selected_prefix=" \033[92m>\033[7m\033[0m \033[7m", # 92 = green, 7 = reverse
                 selected_index=0
             )
+        x,y = View.get_coordinates()
         return ops[chosen]
 
     def collect_data(table: Table,op: operations):
@@ -204,6 +233,9 @@ class View:
             )
         View.selected = T
         return T
+    
+    def get_coordinates():
+        return Terminal().get_location()
 
     @classmethod
     def __str__(cls):

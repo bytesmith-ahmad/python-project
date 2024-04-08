@@ -1,6 +1,6 @@
 from business.models.otolith import Otolith
 from persistence.datastore import DataStore
-from pypika import Query, Table, Field
+from pypika import Query, Table, Field, Order
 
 class Controller:
     """
@@ -48,13 +48,16 @@ class Controller:
         return cls.db.execute_script("\n".join(script))
     
     @classmethod
-    def select(cls,table: Table,columns = '*',rowid=True):
+    def select(cls,table: Table,columns = '*', ordering_terms: list[tuple] = [], rowid=True):
         """
         Performs a select operation on the database.
         """
-        report = cls.db.execute(
-            table.select(*columns)
-        )
+        query = table.select(*columns)
+        if ordering_terms:
+            for ot in ordering_terms:
+                order = Order.asc if ot[1] == 'ASC' else Order.desc
+                query = query.orderby(ot[0],order=order)
+        report = cls.db.execute(query)
         if report.has_error():
             return ["ERROR"]
         else:

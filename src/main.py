@@ -17,14 +17,6 @@ def main():
     
     # load configs
     _ini = read_ini(src/'config.ini')
-    
-    #^^^^^^^^^^^^^^^
-    from blessed import Terminal
-    term = Terminal()
-    x,y = term.get_location()
-    print(x, y)
-
-    #^^^^^^^^^^^^^^^^^
 
     # call consoleview
     View.start(src/_ini['Datasources']['database']) # loop
