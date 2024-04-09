@@ -22,7 +22,7 @@ class View:
         UPDATE = 2
         DELETE = 3
         COMMIT = 4
-        FILTER = 7
+        FILTER = 7 # replacing SELECT
         SORT = 8
         RUN_SCRIPT = 5
         EXIT = 6
@@ -39,7 +39,7 @@ class View:
     fields: list = []
     unmasked_fields = []
     cache: str = ''
-    display_settings: dict = "default"
+    display_settings: dict = {}
     
     @classmethod
     def start(c, path_to_db):
@@ -59,13 +59,14 @@ class View:
                     exit_1 = False
                     c.cache = c.get_table_data(c.selected_table,View.operations.SELECT)
                 while not exit_1:
-                    View.display(c.cache) 
+                    View.display(c.cache,{}) 
                     c.selected_op = c.choose_operation()
                     if c.selected_op == c.operations.EXIT:
                         exit_1 = True
                     elif c.selected_op == c.operations.COMMIT:
-                        os.system('cls')
                         s = Controller.process(c.selected_op)
+                        os.system('cls')
+                        print(c.cache)
                         print(s)
                     elif c.selected_op == c.operations.RUN_SCRIPT:
                         os.system('cls')
@@ -102,7 +103,7 @@ class View:
                         unmasked = c.unmasked_fields
                         columns = unmasked if unmasked else '*'
                         rows = Controller.select(c.selected_table,columns,ordering_terms)
-                        View.display(rows)
+                        View.display(rows,{})
                     else: # SELECT and DML here
                         data = c.collect_data(op=c.selected_op,table=c.selected_table)
                         otoliths = Controller.process(op=c.selected_op,table=c.selected_table,data=data)
@@ -111,7 +112,7 @@ class View:
             exception("What happened?")
 
     @classmethod
-    def get_table_data(c,table,op): #TODO
+    def get_table_data(c,table,op):
         """"""
         data = c.collect_data(op=op,table=table)
         return Controller.process(op=op,table=c.selected_table,data=data)
@@ -126,10 +127,10 @@ class View:
         """
         Choose a table from the available tables.
         """
-        options =  Controller.get_tables()
+        options =  Controller.get_tables() + ['EXIT']
         os.system('cls')
         chosen = nav_menu(
-                options + ['EXIT', '\033[0m'],
+                options + ['\033[0m'],
                 caption_indices=[len(options)],
                 deselected_prefix="\033[0m   ",
                 selected_prefix=" \033[92m>\033[7m\033[0m \033[7m", # 92 = green, 7 = reverse
@@ -208,7 +209,7 @@ class View:
         for i in range(0, len(lst), n):
             yield lst[i:i + n]
         
-    def display(data: list[object]): #TODO
+    def display(data: list[object], settings): #TODO
         """
         Display the data in a tabular format.
         """

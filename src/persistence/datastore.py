@@ -49,7 +49,7 @@ class DataStore():
         """
         try:
             self.connection.commit()
-            return "Changes saved"
+            return "\033[92mChanges saved\n\033[0m"
         except sqlite3.Error as e:
             return "ERROR: CHANGES NOT SAVED"
         

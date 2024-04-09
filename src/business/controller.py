@@ -29,7 +29,7 @@ class Controller:
         Processes the operation based on the given parameters.
         """
         match op.value:
-            case 0:
+            case 0 | 7:
                 return cls.select(table,data)
             case 1:
                 return cls.insert(table,data)
