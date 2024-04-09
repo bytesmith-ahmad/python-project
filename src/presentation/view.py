@@ -22,7 +22,7 @@ class View:
         UPDATE = 2
         DELETE = 3
         COMMIT = 4
-        FILTER = 7 # replacing SELECT
+        FILTER = 7
         SORT = 8
         RUN_SCRIPT = 5
         EXIT = 6
